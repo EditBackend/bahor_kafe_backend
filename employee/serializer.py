@@ -2,13 +2,22 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from .models import Employee
+from .models import Employee, EmployeePermission, EmployeePermission
 
 User = get_user_model()
-
+class EmployeePermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeePermission
+        fields = [
+            "can_payment",
+            "can_discount",
+            "can_cancel_order",
+            "can_income",
+        ]
 
 class EmployeeSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source="user.phone", read_only=True)
+    permissions = EmployeePermissionSerializer(read_only=True)  # ✅ shu yerda nested
 
     class Meta:
         model = Employee
@@ -22,6 +31,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "permissions",  # shu yerda qo‘shildi
         ]
         read_only_fields = [
             "pin_is_set",
@@ -38,6 +48,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError("Xodim ismi bo‘sh bo‘lishi mumkin emas.")
         return value
+
 
 
 class EmployeeCreateSerializer(serializers.ModelSerializer):
@@ -193,16 +204,3 @@ class MeSerializer(serializers.ModelSerializer):
 
 
 
-
-from .models import EmployeePermission
-
-class EmployeePermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmployeePermission
-        fields = [
-            "can_payment",
-            "can_discount",
-            "can_cancel_order",
-            "can_income",
-            "permissions"
-        ]
