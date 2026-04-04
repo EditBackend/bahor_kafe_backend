@@ -27,9 +27,8 @@ SECRET_KEY = 'django-insecure-k9df*mk5b0$5i1248-b!la7$4xdblvt)gyl3!(o@ttsq9#^3v1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = [
-    "bahor_kafe_backend-gqfm.onrender.com",
+    "bahor-kafe-backend-gqfm.onrender.com",
     "localhost",
     "127.0.0.1"
 ]
@@ -87,7 +86,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://bahor_kafe_backend.onrender.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://bahor_kafe_backend .onrender.com",
+    "https://bahor-kafe-backend-gqfm.onrender.com",
 ]
 
 TEMPLATES = [
