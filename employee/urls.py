@@ -26,3 +26,4 @@ urlpatterns = [
     path("employee/<int:employee_id>/permissions/", EmployeePermissionAPIView.as_view()),
 
 ]
+
