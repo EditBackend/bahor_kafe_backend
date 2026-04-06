@@ -36,11 +36,11 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('employee/', include('employee.urls')),
-    path('kitchen/', include('kitchen.urls')),
-    path('order/', include('order.urls')),
-    path('table/', include('table.urls')),
-    path('inventory/', include('inventory.urls')),
+    path('xodimlar/', include('employee.urls')),
+    path('oshxona/', include('kitchen.urls')),
+    path('buyurtma/', include('order.urls')),
+    path('stollar/', include('table.urls')),
+    path('ombor/', include('inventory.urls')),
     path('sozlamalar/', include('sozlamalar.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
