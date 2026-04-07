@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
@@ -20,7 +21,12 @@ from .serializer import (
     MeSerializer,
 )
 
+def home(request):
+    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
+
+
 User = get_user_model()
+
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):

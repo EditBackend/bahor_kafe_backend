@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.http import JsonResponse
 from django.utils import timezone
 
 from rest_framework import status, viewsets
@@ -9,6 +10,10 @@ from rest_framework.exceptions import ValidationError
 
 from .models import Order, OrderItem
 from .serializer import OrderSerializer, OrderItemSerializer
+
+def home(request):
+    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
+
 
 
 class OrderViewSet(viewsets.ModelViewSet):

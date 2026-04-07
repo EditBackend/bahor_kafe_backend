@@ -1,8 +1,14 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework import viewsets
 from .models import Branch,CheckSettings,TaxSettings, OrderFlowSettings,RestaurantSettings
 from .serializer import BranchSerializer,CheckSettingsSerializer,TaxSettingsSerializer,OrderFlowSettingsSerializer,RestaurantSettingsSerializer
 from rest_framework.response import Response
+
+
+def home(request):
+    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
+
 
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all().order_by('-id')

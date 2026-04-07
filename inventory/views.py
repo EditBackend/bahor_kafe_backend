@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.viewsets import ModelViewSet
 from .models import Ingredient, Recipe, Dish, StockMovement
 from .serializer import IngredientSerializer, RecipeSerializer, DishSerializer
@@ -6,6 +7,11 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from decimal import Decimal
 from rest_framework.exceptions import ValidationError
+
+
+def home(request):
+    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
+
 
 
 class IngredientViewSet(ModelViewSet):
