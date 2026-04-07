@@ -6,12 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="144da649-4c22-4d6d-ade9-0a28fa26d2b3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/employee/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/employee/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/inventory/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/inventory/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kitchen/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/kitchen/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/order/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sozlamalar/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/sozlamalar/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/table/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/table/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bahor_kafe_backend/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/bahor_kafe_backend/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

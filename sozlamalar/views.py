@@ -6,8 +6,6 @@ from .serializer import BranchSerializer,CheckSettingsSerializer,TaxSettingsSeri
 from rest_framework.response import Response
 
 
-def home(request):
-    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
 
 
 class BranchViewSet(viewsets.ModelViewSet):

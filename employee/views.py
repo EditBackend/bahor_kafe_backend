@@ -21,8 +21,7 @@ from .serializer import (
     MeSerializer,
 )
 
-def home(request):
-    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
+
 
 
 User = get_user_model()

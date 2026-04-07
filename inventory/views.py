@@ -9,9 +9,6 @@ from decimal import Decimal
 from rest_framework.exceptions import ValidationError
 
 
-def home(request):
-    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
-
 
 
 class IngredientViewSet(ModelViewSet):

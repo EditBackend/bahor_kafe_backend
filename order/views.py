@@ -11,8 +11,7 @@ from rest_framework.exceptions import ValidationError
 from .models import Order, OrderItem
 from .serializer import OrderSerializer, OrderItemSerializer
 
-def home(request):
-    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
+
 
 
 

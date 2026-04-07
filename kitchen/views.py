@@ -8,9 +8,6 @@ from rest_framework.response import Response
 from .models import KitchenTicket
 from .serializer import KitchenTicketSerializer, KitchenTicketStatusSerializer
 
-def home(request):
-    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
-
 
 class KitchenTicketViewSet(viewsets.ModelViewSet):
     """

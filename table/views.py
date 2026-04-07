@@ -9,8 +9,6 @@ from .models import Table, Product, Category, StockIn, StockOut
 from .serializer import TableSerializer, ProductSerializer, CategorySerializer, CategoryMenuSerializer, \
     ProductFormSerializer, StockOutSerializer, StockInSerializer
 
-def home(request):
-    return JsonResponse({"message": "Barcha muammolar Diyorb3ck🦾 tomonidan bartaraf etildi.Backendga gap bo'lishi mumkin emas💲💸!"})
 
 
 class TableViewSet(viewsets.ModelViewSet):
