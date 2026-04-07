@@ -1,3 +1,4 @@
 from django.contrib import admin
+from kitchen.models import KitchenTicket
 
-# Register your models here.
+admin.site.register(KitchenTicket)

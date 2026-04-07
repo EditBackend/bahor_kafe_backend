@@ -1,3 +1,8 @@
 from django.contrib import admin
+from inventory.models import Ingredient, Unit, StockMovement, Recipe, Dish
 
-# Register your models here.
+admin.site.register(Unit)
+admin.site.register(Ingredient)
+admin.site.register(StockMovement)
+admin.site.register(Recipe)
+admin.site.register(Dish)

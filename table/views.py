@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
@@ -18,7 +18,7 @@ class TableViewSet(viewsets.ModelViewSet):
     - ?is_active=
     """
     serializer_class = TableSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Table.objects.all().order_by("name")
@@ -46,7 +46,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     - ?is_active=
     """
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Category.objects.all().order_by("name")
@@ -72,7 +72,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     - ?search=
     """
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = Product.objects.select_related("category").all().order_by("name")
@@ -98,7 +98,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 class MenuAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request):
         categories = Category.objects.filter(is_active=True)
@@ -112,7 +112,7 @@ class MenuAPIView(APIView):
 
 
 class ProductCreateUpdateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     # ➕ CREATE
     def post(self, request):
