@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
-from .models import Ingredient, Recipe, Dish, StockMovement
-from .serializer import IngredientSerializer, RecipeSerializer, DishSerializer
+from .models import Ingredient, Recipe, Dish, StockMovement,Unit,StockIn, StockOut
+from .serializer import IngredientSerializer, RecipeSerializer, DishSerializer,UnitSerializer,StockOutSerializer, StockInSerializer
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -22,7 +22,7 @@ class DishViewSet(viewsets.ModelViewSet):
     queryset = Dish.objects.all()
     serializer_class = DishSerializer
 
-    # 🔥 OVQAT ISHLATISH (OMBORDAN KAMAYTIRISH)
+    #  OVQAT ISHLATISH (OMBORDAN KAMAYTIRISH)
     @action(detail=True, methods=['post'])
     def cook(self, request, pk=None):
         count = int(request.data.get("count", 1))  # nechta ovqat
@@ -43,3 +43,61 @@ class DishViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Ombordan ayrildi ✅"})
 
+class UnitViewSet(viewsets.ModelViewSet):
+    queryset = Unit.objects.all()
+    serializer_class = UnitSerializer
+
+
+class StockInViewSet(viewsets.ModelViewSet):
+    queryset = StockIn.objects.all().order_by("-id")
+    serializer_class = StockInSerializer
+
+
+class StockOutViewSet(viewsets.ModelViewSet):
+    queryset = StockOut.objects.all().order_by("-id")
+    serializer_class = StockOutSerializer
+
+
+
+class HistoryViewSet(viewsets.ModelViewSet):
+
+    def list(self, request):
+
+        kirimlar = StockIn.objects.all().values(
+            'id',
+            'product__name',
+            'quantity',
+            'created_at'
+        )
+
+        chiqimlar = StockOut.objects.all().values(
+            'id',
+            'product__name',
+            'quantity',
+            'created_at'
+        )
+
+        data = []
+
+        # 📥 kirim qo‘shish
+        for i in kirimlar:
+            data.append({
+                "type": "kirim",
+                "product": i['product__name'],
+                "quantity": i['quantity'],
+                "created_at": i['created_at']
+            })
+
+        # 📤 chiqim qo‘shish
+        for i in chiqimlar:
+            data.append({
+                "type": "chiqim",
+                "product": i['product__name'],
+                "quantity": i['quantity'],
+                "created_at": i['created_at']
+            })
+
+        # 📅 vaqt bo‘yicha tartiblash (eng yangisi yuqorida)
+        data = sorted(data, key=lambda x: x['created_at'], reverse=True)
+
+        return Response(data)

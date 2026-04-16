@@ -7,10 +7,7 @@ from django.db import models
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-
 from table.models import Product
-
-
 class Order(models.Model):
     """
     Order = butun buyurtmaning o'zi.

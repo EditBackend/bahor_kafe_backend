@@ -1,15 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import TableViewSet, ProductViewSet, CategoryViewSet, MenuAPIView, ProductCreateUpdateAPIView, \
-    StockInViewSet, StockOutViewSet
+     ProductIngredientViewSet
 from rest_framework.authtoken.views import obtain_auth_token
 
 router = DefaultRouter()
 router.register(r'table', TableViewSet, basename='table')
 router.register(r'category', CategoryViewSet, basename='category')
 router.register(r'product', ProductViewSet, basename='product')
-router.register("kirim", StockInViewSet)
-router.register("chiqim", StockOutViewSet)
+router.register(r'product-ingredients', ProductIngredientViewSet,basename="product-ingredients")
 
 urlpatterns = [
     path('', include(router.urls)),

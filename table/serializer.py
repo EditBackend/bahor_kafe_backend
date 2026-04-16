@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Table, Category, Product, StockOut, StockIn
+from inventory.serializer import IngredientSerializer
+from .models import Table, Category, Product,  ProductIngredient
 
 
 class TableSerializer(serializers.ModelSerializer):
@@ -46,9 +47,22 @@ class CategorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Kategoriya nomi bo‘sh bo‘lishi mumkin emas.")
         return value
 
+class ProductIngredientSerializer(serializers.ModelSerializer):
+    ingredient = IngredientSerializer()
+
+    class Meta:
+        model = ProductIngredient
+        fields = ["ingredient", "amount"]
 
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
+
+    ingredients = ProductIngredientSerializer(
+        source="inventory_ingredients",
+        many=True,
+        read_only=True
+    )
+
 
     class Meta:
         model = Product
@@ -62,6 +76,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "ingredients",
         ]
         read_only_fields = [
             "created_at",
@@ -141,24 +156,3 @@ class ProductFormSerializer(serializers.ModelSerializer):
         return value
 
 
-
-class StockInSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StockIn
-        fields = "__all__"
-        read_only_fields = ["created_at", "created_by"]
-
-    def create(self, validated_data):
-        validated_data["created_by"] = self.context["request"].user
-        return super().create(validated_data)
-
-
-class StockOutSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StockOut
-        fields = "__all__"
-        read_only_fields = ["created_at", "created_by"]
-
-    def create(self, validated_data):
-        validated_data["created_by"] = self.context["request"].user
-        return super().create(validated_data)

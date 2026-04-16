@@ -28,7 +28,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     Employee CRUD
     Admin uchun xodim yaratish, ko‘rish, tahrirlash.
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
     def get_queryset(self):
@@ -102,7 +102,7 @@ class SetPinAPIView(APIView):
     Header:
         Authorization: Token <token>
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(request_body=PinSetSerializer, responses={200: PinSetSerializer})
     def post(self, request):
@@ -154,7 +154,7 @@ class MeAPIView(APIView):
     """
     Token orqali hozirgi login bo‘lgan xodimni qaytaradi.
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     # @swagger_auto_schema(request_body=MeSerializer, responses={200: MeSerializer})
     def get(self, request):
         try:
@@ -172,7 +172,7 @@ class LogoutAPIView(APIView):
     """
     Tokenni o‘chiradi.
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request):
         request.auth.delete()
@@ -181,7 +181,7 @@ class LogoutAPIView(APIView):
 
 
 class EmployeePermissionAPIView(RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     serializer_class = EmployeePermissionSerializer
 
     def get_object(self):

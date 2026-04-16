@@ -1,8 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.conf import settings
-from django.db import transaction
-from rest_framework.exceptions import ValidationError
+
+
 
 # =========================
 # TABLE
@@ -213,63 +212,14 @@ class Product(models.Model):
 
 
 
-class StockIn(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stock_ins")
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            return super().save(*args, **kwargs)  # update bo‘lsa tegmaymiz
-
-        with transaction.atomic():
-            product = Product.objects.select_for_update().get(id=self.product.id)
-
-            product.quantity += self.quantity
-            product.last_price = self.price
-            product.save()
-
-            super().save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        # mahsulotni yangilash
-        self.product.quantity += self.quantity
-        self.product.last_price = self.price
-        self.product.save()
-
-        super().save(*args, **kwargs)
 
 
 
-class StockOut(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="stock_outs")
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
-    def save(self, *args, **kwargs):
-        # tekshiruv
-        if self.product.quantity < self.quantity:
-            raise ValueError("Omborda yetarli mahsulot yo‘q!")
+class ProductIngredient(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="inventory_ingredients")
+    ingredient = models.ForeignKey("inventory.Ingredient", on_delete=models.CASCADE)
+    amount = models.FloatField()  # nechta ketadi
 
-        self.product.quantity -= self.quantity
-        self.product.save()
-
-        super().save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            return super().save(*args, **kwargs)
-
-        with transaction.atomic():
-            product = Product.objects.select_for_update().get(id=self.product.id)
-
-            if product.quantity < self.quantity:
-                raise ValidationError("Yetarli mahsulot yo‘q!")
-
-            product.quantity -= self.quantity
-            product.save()
-
-            super().save(*args, **kwargs)
+    def __str__(self):
+        return f"{self.product} - {self.ingredient}"
