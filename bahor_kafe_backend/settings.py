@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-k9df*mk5b0$5i1248-b!la7$4xdblvt)gyl3!(o@ttsq9#^3v1
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "https://bahor-kafe-backend-2-oedu.onrender.com",
+    "https://bahor-kafe-backend.onrender.com",
     "localhost",
     "127.0.0.1"
 ]
@@ -85,10 +85,10 @@ ROOT_URLCONF = 'bahor_kafe_backend.urls'
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    "https://bahor_kafe_backend-2.onrender.com",
+    "https://bahor_kafe_backend.onrender.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://bahor_kafe_backend-2.onrender.com",
+    "https://bahor_kafe_backend.onrender.com",
 ]
 
 TEMPLATES = [
