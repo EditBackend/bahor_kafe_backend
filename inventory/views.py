@@ -58,11 +58,12 @@ class StockOutViewSet(viewsets.ModelViewSet):
     serializer_class = StockOutSerializer
 
 
+class HistoryViewSet(viewsets.ViewSet):  # ModelViewSet o'rniga ViewSet ishlatamiz
 
-class HistoryViewSet(viewsets.ModelViewSet):
+    # Swagger uchun soxta serializer va queryset (xatoni oldini olish uchun)
+    queryset = StockIn.objects.none()
 
     def list(self, request):
-
         kirimlar = StockIn.objects.all().values(
             'id',
             'product__name',
@@ -97,7 +98,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
                 "created_at": i['created_at']
             })
 
-        # 📅 vaqt bo‘yicha tartiblash (eng yangisi yuqorida)
+        # 📅 vaqt bo‘yicha tartiblash
         data = sorted(data, key=lambda x: x['created_at'], reverse=True)
 
         return Response(data)
