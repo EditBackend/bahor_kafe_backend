@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: bahor-kafe-backend
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn bahor_kafe_backend.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0  # Django 6.0.3 uchun 3.12 kerak
+      - key: DJANGO_SETTINGS_MODULE
+        value: bahor_kafe_backend.settings
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DISABLE_POETRY
+        value: "true"
