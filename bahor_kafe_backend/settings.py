@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 
 from django.conf.global_settings import WSGI_APPLICATION, CSRF_TRUSTED_ORIGINS
+from django.utils.decorators import sync_and_async_middleware
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

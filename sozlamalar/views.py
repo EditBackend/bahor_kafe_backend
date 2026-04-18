@@ -88,10 +88,10 @@ class RestaurantSettingsViewSet(viewsets.ViewSet):
 
     def get_object(self):
         obj, created = RestaurantSettings.objects.get_or_create(
-            id=1,
+            id=2,
             defaults={
-                "name": "RestERP Cafe",
-                "address": "Toshkent",
+                "name": "Bahor Cafe",
+                "address": "Farg'ona",
                 "phone": "+998"
             }
         )
