@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from .models import Branch,CheckSettings,TaxSettings, OrderFlowSettings,RestaurantSettings
 from .serializer import BranchSerializer,CheckSettingsSerializer,TaxSettingsSerializer,OrderFlowSettingsSerializer,RestaurantSettingsSerializer
 from rest_framework.response import Response
@@ -62,6 +62,20 @@ class TaxSettingsViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+    def get_object(self):
+        obj, created = TaxSettings.objects.get_or_create(id=1)
+        return obj
+
+        # POST /tax-settings/
+
+    def create(self, request):
+        obj = self.get_object()  # id=1 doim shu
+        serializer = TaxSettingsSerializer(obj, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     # PATCH /tax-settings/1/
     def partial_update(self, request, pk=None):
