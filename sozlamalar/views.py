@@ -27,6 +27,10 @@ class CheckSettingsViewSet(viewsets.ViewSet):
         serializer = CheckSettingsSerializer(self.get_object())
         return Response(serializer.data)
 
+    def create(self, request):
+        serializer = CheckSettingsSerializer(self.get_object())
+        return Response(serializer.data)
+
     def retrieve(self, request, pk=None):
         serializer = CheckSettingsSerializer(self.get_object())
         return Response(serializer.data)
