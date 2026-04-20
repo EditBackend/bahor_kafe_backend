@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
+
 from .models import Branch,CheckSettings,TaxSettings, OrderFlowSettings,RestaurantSettings
 from .serializer import BranchSerializer,CheckSettingsSerializer,TaxSettingsSerializer,OrderFlowSettingsSerializer,RestaurantSettingsSerializer
 from rest_framework.response import Response
@@ -14,6 +16,12 @@ class CheckSettingsViewSet(viewsets.ViewSet):
     def get_object(self):
         obj, created = CheckSettings.objects.get_or_create(id=1)
         return obj
+
+    @action(detail=False, methods=['get'], url_path='check-settings')
+    def check_settings(self, request):
+        serializer = CheckSettingsSerializer(self.get_object())
+        return Response(serializer.data)
+
 
     def list(self, request):
         serializer = CheckSettingsSerializer(self.get_object())
