@@ -1,104 +1,92 @@
-from rest_framework.viewsets import ModelViewSet
-from .models import Ingredient, Recipe, Dish, StockMovement,Unit,StockIn, StockOut
-from .serializer import IngredientSerializer, RecipeSerializer, DishSerializer,UnitSerializer,StockOutSerializer, StockInSerializer
-from rest_framework.response import Response
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from decimal import Decimal
-from rest_framework.exceptions import ValidationError
+from rest_framework import viewsets
+from .models import (
+    OlchovBirligi,
+    Maxsulot,
+    OvqatKategoriya,
+    Ovqat,
+    Kirim,
+    Chiqim,
+    Retsept,
+    Ombor
+)
+
+from .serializer import (
+    OlchovBirligiSerializer,
+    MaxsulotSerializer,
+    OvqatKategoriyaSerializer,
+    OvqatSerializer,
+    KirimSerializer,
+    ChiqimSerializer,
+    RetseptSerializer,
+    OmborSerializer
+)
 
 
-class IngredientViewSet(ModelViewSet):
-    queryset = Ingredient.objects.filter(is_active=True)
-    serializer_class = IngredientSerializer
+
+class OlchovBirligiViewSet(viewsets.ModelViewSet):
+    queryset = OlchovBirligi.objects.all()
+    serializer_class = OlchovBirligiSerializer
 
 
-class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+class MaxsulotViewSet(viewsets.ModelViewSet):
+    queryset = Maxsulot.objects.all()
+    serializer_class = MaxsulotSerializer
 
 
-class DishViewSet(viewsets.ModelViewSet):
-    queryset = Dish.objects.all()
-    serializer_class = DishSerializer
 
-    #  OVQAT ISHLATISH (OMBORDAN KAMAYTIRISH)
-    @action(detail=True, methods=['post'])
-    def cook(self, request, pk=None):
-        count = int(request.data.get("count", 1))  # nechta ovqat
-
-        dish = self.get_object()
-
-        # tekshirish
-        for recipe in dish.recipes.all():
-            kerak = recipe.amount * count
-            if recipe.ingredient.quantity < kerak:
-                raise ValidationError(f"{recipe.ingredient.name} yetarli emas!")
-
-        # kamaytirish
-        for recipe in dish.recipes.all():
-            ingredient = recipe.ingredient
-            ingredient.quantity -= recipe.amount * count
-            ingredient.save()
-
-        return Response({"message": "Ombordan ayrildi ✅"})
-
-class UnitViewSet(viewsets.ModelViewSet):
-    queryset = Unit.objects.all()
-    serializer_class = UnitSerializer
+class OvqatKategoriyaViewSet(viewsets.ModelViewSet):
+    queryset = OvqatKategoriya.objects.all()
+    serializer_class = OvqatKategoriyaSerializer
 
 
-class StockInViewSet(viewsets.ModelViewSet):
-    queryset = StockIn.objects.all().order_by("-id")
-    serializer_class = StockInSerializer
+
+class OvqatViewSet(viewsets.ModelViewSet):
+    queryset = Ovqat.objects.all()
+    serializer_class = OvqatSerializer
 
 
-class StockOutViewSet(viewsets.ModelViewSet):
-    queryset = StockOut.objects.all().order_by("-id")
-    serializer_class = StockOutSerializer
 
+class KirimViewSet(viewsets.ModelViewSet):
+    queryset = Kirim.objects.all()
+    serializer_class = KirimSerializer
 
-class HistoryViewSet(viewsets.ViewSet):  # ModelViewSet o'rniga ViewSet ishlatamiz
+    def perform_create(self, serializer):
+        kirim = serializer.save(created_by=None)
 
-    # Swagger uchun soxta serializer va queryset (xatoni oldini olish uchun)
-    queryset = StockIn.objects.none()
-
-    def list(self, request):
-        kirimlar = StockIn.objects.all().values(
-            'id',
-            'product__name',
-            'quantity',
-            'created_at'
+        Ombor.objects.create(
+            maxsulot=kirim.product,
+            miqdor=kirim.quantity,
+            oxirgi_narx=kirim.price
         )
 
-        chiqimlar = StockOut.objects.all().values(
-            'id',
-            'product__name',
-            'quantity',
-            'created_at'
+
+class ChiqimViewSet(viewsets.ModelViewSet):
+    queryset = Chiqim.objects.all()
+    serializer_class = ChiqimSerializer
+
+    def perform_create(self, serializer):
+        chiqim = serializer.save(created_by=None)
+
+        product = chiqim.product
+
+        # ❗ QOLDIQ TEKSHIRISH
+        if product.get_qoldiq() < chiqim.quantity:
+            raise Exception("Omborda yetarli mahsulot yo‘q!")
+
+        Ombor.objects.create(
+            maxsulot=product,
+            miqdor=-chiqim.quantity,
+            oxirgi_narx=0
         )
 
-        data = []
 
-        # 📥 kirim qo‘shish
-        for i in kirimlar:
-            data.append({
-                "type": "kirim",
-                "product": i['product__name'],
-                "quantity": i['quantity'],
-                "created_at": i['created_at']
-            })
 
-        # 📤 chiqim qo‘shish
-        for i in chiqimlar:
-            data.append({
-                "type": "chiqim",
-                "product": i['product__name'],
-                "quantity": i['quantity'],
-                "created_at": i['created_at']
-            })
+class RetseptViewSet(viewsets.ModelViewSet):
+    queryset = Retsept.objects.all()
+    serializer_class = RetseptSerializer
 
-        # 📅 vaqt bo‘yicha tartiblash
-        data = sorted(data, key=lambda x: x['created_at'], reverse=True)
 
-        return Response(data)
+class OmborViewSet(viewsets.ModelViewSet):
+    queryset = Ombor.objects.all()
+    serializer_class = OmborSerializer
+    http_method_names = ['get']

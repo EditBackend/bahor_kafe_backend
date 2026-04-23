@@ -1,15 +1,30 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import IngredientViewSet, RecipeViewSet, UnitViewSet,StockInViewSet, StockOutViewSet,HistoryViewSet
+
+from .views import (
+    OlchovBirligiViewSet,
+    MaxsulotViewSet,
+    OvqatKategoriyaViewSet,
+    OvqatViewSet,
+    KirimViewSet,
+    ChiqimViewSet,
+    RetseptViewSet,
+    OmborViewSet
+)
+
 
 router = DefaultRouter()
-router.register(r'ingredients', IngredientViewSet),
-router.register(r'recipes', RecipeViewSet),
-router.register(r'unit',UnitViewSet)
-router.register("kirim", StockInViewSet)
-router.register("chiqim", StockOutViewSet)
-router.register(r'history', HistoryViewSet, basename='history')
+
+router.register(r'unit', OlchovBirligiViewSet)
+router.register(r'maxsulot', MaxsulotViewSet)
+router.register(r'kategoriya', OvqatKategoriyaViewSet)
+router.register(r'ovqat', OvqatViewSet)
+router.register(r'kirim', KirimViewSet)
+router.register(r'chiqim', ChiqimViewSet)
+router.register(r'retsept', RetseptViewSet)
+router.register(r'ombor', OmborViewSet)
+
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
 ]

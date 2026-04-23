@@ -1,76 +1,133 @@
 from rest_framework import serializers
-from .models import Ingredient, Recipe, Dish, StockMovement,Unit,StockOut, StockIn
-from employee.models import Employee
+from .models import (
+    OlchovBirligi,
+    Maxsulot,
+    OvqatKategoriya,
+    Ovqat,
+    Kirim,
+    Chiqim,
+    Retsept, Ombor,
+)
 
 
-
-class IngredientSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Ingredient
-        fields = "__all__"
-
-
-class RecipeSerializer(serializers.ModelSerializer):
-    ingredient_name = serializers.CharField(source='ingredient.name', read_only=True)
-    unit = serializers.CharField(source='ingredient.unit.name', read_only=True)
-
-    class Meta:
-        model = Recipe
-        fields = ['ingredient', 'ingredient_name', 'unit', 'quantity']
-
-
-class DishSerializer(serializers.ModelSerializer):
-    recipes = RecipeSerializer(many=True)
+class OmborSerializer(serializers.ModelSerializer):
+    maxsulot_nomi = serializers.CharField(source='maxsulot.name', read_only=True)
+    qoldiq = serializers.SerializerMethodField()
 
     class Meta:
-        model = Dish
-        fields = ['id', 'name', 'recipes']
+        model = Ombor
+        fields = [
+            'id',
+            'maxsulot',
+            'maxsulot_nomi',
+            'miqdor',
+            'oxirgi_narx',
+            'created_at',
+            'qoldiq'
+        ]
+        read_only_fields = ['created_at']
 
-    def create(self, validated_data):
-        recipes_data = validated_data.pop('recipes')
-        dish = Dish.objects.create(**validated_data)
+    # 🔥 umumiy qoldiq (shu mahsulot bo‘yicha)
+    def get_qoldiq(self, obj):
+        return obj.maxsulot.get_qoldiq()
 
-        for recipe in recipes_data:
-            Recipe.objects.create(dish=dish, **recipe)
+    # 🔥 VALIDATION (manfiy bo‘lmasin)
+    def validate_miqdor(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Miqdor manfiy bo‘lishi mumkin emas!")
+        return value
 
-        return dish
-
-
-
-class StockMovementSerializer(serializers.ModelSerializer):
+class OlchovBirligiSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StockMovement
-        fields = ['id', 'ingredient', 'type', 'quantity', 'reason', 'created_by', 'created_at']
+        model = OlchovBirligi
+        fields = ['id', 'name']
 
 
-class UnitSerializer(serializers.ModelSerializer):
+
+class MaxsulotSerializer(serializers.ModelSerializer):
+    unit_name = serializers.CharField(source='unit.name', read_only=True)
+
     class Meta:
-        model = Unit
-        fields = ["name"]
+        model = Maxsulot
+        fields = ['id', 'name', 'unit', 'unit_name']
 
-class StockInSerializer(serializers.ModelSerializer):
+
+class OvqatKategoriyaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StockIn
-        fields = "__all__"
-        read_only_fields = ["created_at"]
-
-    def create(self, validated_data):
-        user = self.context["request"].user
-        if not user.is_authenticated:
-            raise serializers.ValidationError("User login qilmagan")
-        employee = Employee.objects.get(user=user)
-
-        validated_data["created_by"] = employee
-        return super().create(validated_data)
+        model = OvqatKategoriya
+        fields = ['id', 'name']
 
 
-class StockOutSerializer(serializers.ModelSerializer):
+class OvqatSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
     class Meta:
-        model = StockOut
-        fields = "__all__"
-        read_only_fields = ["created_at", "created_by"]
+        model = Ovqat
+        fields = ['id', 'name', 'category', 'category_name']
 
-    def create(self, validated_data):
-        validated_data["created_by"] = self.context["request"].user
-        return super().create(validated_data)
+
+
+class KirimSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+
+    class Meta:
+        model = Kirim
+        fields = [
+            'id',
+            'product',
+            'product_name',
+            'quantity',
+            'price',
+            'created_by',
+            'created_by_name',
+            'created_at'
+        ]
+        read_only_fields = ['created_by', 'created_at']
+
+
+
+class ChiqimSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+
+    class Meta:
+        model = Chiqim
+        fields = [
+            'id',
+            'product',
+            'product_name',
+            'quantity',
+            'created_by',
+            'created_by_name',
+            'created_at'
+        ]
+        read_only_fields = ['created_by', 'created_at']
+
+
+class RetseptSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    food_name = serializers.CharField(source='food.name', read_only=True)
+
+    class Meta:
+        model = Retsept
+        fields = [
+            'id',
+            'product',
+            'product_name',
+            'food',
+            'food_name',
+            'amount'
+        ]
+
+class OvqatDetailSerializer(serializers.ModelSerializer):
+    retseptlar = RetseptSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Ovqat
+        fields = [
+            'id',
+            'name',
+            'category',
+            'retseptlar'
+        ]
