@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-
+from inventory.models import Maxsulot, OvqatKategoriya
 from .models import Table, Product, Category
 from .serializer import TableSerializer, ProductSerializer, CategorySerializer, CategoryMenuSerializer, \
     ProductFormSerializer
@@ -102,13 +102,12 @@ class ProductViewSet(viewsets.ModelViewSet):
 class MenuViewSet(ViewSet):
 
     def list(self, request):
-        mahsulotlar = Mahsulot.objects.filter(mavjud=True)
 
-        kategoriyalar = Kategoriya.objects.filter(faol=True).prefetch_related(
-            Prefetch('mahsulotlar', queryset=mahsulotlar)
+        kategoriyalar = OvqatKategoriya.objects.prefetch_related(
+            'ovqatlar__retseptlar__product'
         )
 
-        serializer = KategoriyaMenuSerializer(kategoriyalar, many=True)
+        serializer = CategoryMenuSerializer(kategoriyalar, many=True)
 
         return Response({
             "kategoriyalar": serializer.data
