@@ -103,15 +103,16 @@ class MenuViewSet(ViewSet):
 
     def list(self, request):
 
-        kategoriyalar = OvqatKategoriya.objects.prefetch_related(
-            'ovqatlar__retseptlar__product'
+        products = Product.objects.filter(is_active=True)
+
+        categories = Category.objects.filter(is_active=True).prefetch_related(
+            Prefetch('products', queryset=products)
         )
 
-        serializer = CategoryMenuSerializer(kategoriyalar, many=True)
+        serializer = CategoryMenuSerializer(categories, many=True)
 
-        return Response({
-            "kategoriyalar": serializer.data
-        })
+        return Response(serializer.data)
+
 
 
 

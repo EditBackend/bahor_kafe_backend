@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from inventory.models import Maxsulot
+from django.db.models import Prefetch
 # =========================
 # TABLE
 # =========================
@@ -136,12 +137,7 @@ class Product(models.Model):
     # - Kassada hisoblanadigan narx
     # """
 
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.PROTECT,
-        related_name="products",
-        help_text="Mahsulot qaysi kategoriyaga tegishli."
-    )
+    category = models.ForeignKey(Category,related_name="products", on_delete=models.CASCADE)
 
     name = models.CharField(
         max_length=255,
