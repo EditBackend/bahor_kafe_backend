@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework import viewsets
 # from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -97,16 +98,20 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 
-class MenuAPIView(APIView):
-    # permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        categories = Category.objects.filter(is_active=True)
+class MenuViewSet(ViewSet):
 
-        serializer = CategoryMenuSerializer(categories, many=True)
+    def list(self, request):
+        mahsulotlar = Mahsulot.objects.filter(mavjud=True)
+
+        kategoriyalar = Kategoriya.objects.filter(faol=True).prefetch_related(
+            Prefetch('mahsulotlar', queryset=mahsulotlar)
+        )
+
+        serializer = KategoriyaMenuSerializer(kategoriyalar, many=True)
 
         return Response({
-            "categories": serializer.data
+            "kategoriyalar": serializer.data
         })
 
 
