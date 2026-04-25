@@ -22,16 +22,14 @@ class OmborSerializer(serializers.ModelSerializer):
             'maxsulot_nomi',
             'miqdor',
             'oxirgi_narx',
-            'created_at',
             'qoldiq'
         ]
-        read_only_fields = ['created_at']
 
-    # 🔥 umumiy qoldiq (shu mahsulot bo‘yicha)
+    #  umumiy qoldiq (shu mahsulot bo‘yicha)
     def get_qoldiq(self, obj):
         return obj.maxsulot.get_qoldiq()
 
-    # 🔥 VALIDATION (manfiy bo‘lmasin)
+    # VALIDATION (manfiy bo‘lmasin)
     def validate_miqdor(self, value):
         if value < 0:
             raise serializers.ValidationError("Miqdor manfiy bo‘lishi mumkin emas!")

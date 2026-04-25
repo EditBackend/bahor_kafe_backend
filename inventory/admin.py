@@ -1,10 +1,20 @@
 from django.contrib import admin
-from inventory.models import Ingredient, Unit, StockMovement, Recipe, Dish,StockIn, StockOut
+from .models import (
+    Ombor,
+    OlchovBirligi,
+    Maxsulot,
+    OvqatKategoriya,
+    Ovqat,
+    Kirim,
+    Chiqim,
+    Retsept
+)
 
-admin.site.register(Unit)
-admin.site.register(Ingredient)
-admin.site.register(StockMovement)
-admin.site.register(Recipe)
-admin.site.register(Dish)
-admin.site.register(StockIn)
-admin.site.register(StockOut)
+admin.site.register(Ombor)
+admin.site.register(OlchovBirligi)
+admin.site.register(Maxsulot)
+admin.site.register(OvqatKategoriya)
+admin.site.register(Ovqat)
+admin.site.register(Kirim)
+admin.site.register(Chiqim)
+admin.site.register(Retsept)

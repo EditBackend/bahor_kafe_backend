@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 class Ombor(models.Model):
@@ -80,9 +80,13 @@ class Kirim(models.Model):
         verbose_name="Maxsulot"
     )
     quantity = models.FloatField("Soni")
-    price = models.DecimalField("Narxi", max_digits=12, decimal_places=2)
+    price = models.DecimalField(
+        "Narxi",
+        max_digits=12,
+        decimal_places=2
+    )
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         verbose_name="Kim tomonidan"
@@ -106,7 +110,7 @@ class Chiqim(models.Model):
     )
     quantity = models.FloatField("Soni")
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         verbose_name="Kim tomonidan"

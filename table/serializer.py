@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from inventory.serializer import IngredientSerializer
+from inventory.serializer import MaxsulotSerializer
 from .models import Table, Category, Product,  ProductIngredient
 
 
@@ -48,7 +48,7 @@ class CategorySerializer(serializers.ModelSerializer):
         return value
 
 class ProductIngredientSerializer(serializers.ModelSerializer):
-    ingredient = IngredientSerializer()
+    ingredient = MaxsulotSerializer()
 
     class Meta:
         model = ProductIngredient

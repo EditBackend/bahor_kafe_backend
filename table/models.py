@@ -1,8 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-
-
-
+from inventory.models import Maxsulot
 # =========================
 # TABLE
 # =========================
@@ -218,7 +216,12 @@ class Product(models.Model):
 
 class ProductIngredient(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="inventory_ingredients")
-    ingredient = models.ForeignKey("inventory.Ingredient", on_delete=models.CASCADE)
+    maxsulot = models.ForeignKey(
+        Maxsulot,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     amount = models.FloatField()  # nechta ketadi
 
     def __str__(self):
