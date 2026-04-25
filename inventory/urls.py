@@ -9,7 +9,7 @@ from .views import (
     KirimViewSet,
     ChiqimViewSet,
     RetseptViewSet,
-    OmborViewSet
+    OmborViewSet, TarixViewSet
 )
 
 
@@ -23,7 +23,7 @@ router.register(r'kirim', KirimViewSet)
 router.register(r'chiqim', ChiqimViewSet)
 router.register(r'retsept', RetseptViewSet)
 router.register(r'ombor', OmborViewSet)
-
+router.register('tarix', TarixViewSet, basename='tarix')
 
 urlpatterns = [
     path('api/', include(router.urls)),

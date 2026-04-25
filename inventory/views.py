@@ -1,4 +1,10 @@
+from datetime import timedelta, timezone
+
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
+from order.models import Order
 from .models import (
     OlchovBirligi,
     Maxsulot,
@@ -90,3 +96,30 @@ class OmborViewSet(viewsets.ModelViewSet):
     queryset = Ombor.objects.all()
     serializer_class = OmborSerializer
     http_method_names = ['get']
+
+
+class TarixViewSet(ViewSet):
+
+    def list(self, request):
+
+        hozir = timezone.now()
+
+        kun = hozir - timedelta(days=1)
+        hafta = hozir - timedelta(days=7)
+        oy = hozir - timedelta(days=30)
+
+        def get_data(start_date):
+            qs = Order.objects.filter(yaratilgan_vaqt__gte=start_date)
+
+            return {
+                "jami_buyurtma": qs.count(),
+                "ketdi": qs.filter(holat="ketdi").count(),
+                "qoldi": qs.filter(holat="qoldi").count(),
+                "jami_pul": sum([b.jami_narx for b in qs])
+            }
+
+        return Response({
+            "1_kun": get_data(kun),
+            "1_hafta": get_data(hafta),
+            "1_oy": get_data(oy),
+        })
