@@ -1,4 +1,4 @@
-from aiogram import F
+from django.db.models import F
 from pydantic import ValidationError
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
