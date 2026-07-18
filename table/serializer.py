@@ -17,6 +17,8 @@ class TableSerializer(serializers.ModelSerializer):
             "parts",
             "status",
             "is_active",
+            "x",
+            "y",
             "created_at",
             "updated_at",
         ]

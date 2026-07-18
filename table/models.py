@@ -44,6 +44,16 @@ class Table(models.Model):
         default=True,
         help_text="Stol faol yoki nofaol ekanini bildiradi."
     )
+    x = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Stolning xaritadagi x koordinatasi."
+    )
+    y = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Stolning xaritadagi y koordinatasi."
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
