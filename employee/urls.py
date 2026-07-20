@@ -8,9 +8,15 @@ from .views import (
     MeAPIView,
     LogoutAPIView,
     EmployeePermissionAPIView,
+    RoleViewSet,
+    RoleModulePermissionViewSet,
+    SalaryRecordViewSet,
 )
 router = DefaultRouter()
 router.register(r"employees", EmployeeViewSet, basename="employees")
+router.register(r"roles", RoleViewSet, basename="roles")
+router.register(r"role-module-permissions", RoleModulePermissionViewSet, basename="role-module-permissions")
+router.register(r"salary-records", SalaryRecordViewSet, basename="salary-records")
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/login/", LoginAPIView.as_view(), name="employee-login"),

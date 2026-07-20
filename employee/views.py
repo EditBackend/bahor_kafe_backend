@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.contrib.auth.models import update_last_login
-from .models import EmployeePermission, Employee, AppModules
+from .models import EmployeePermission, Employee, AppModules, Role, RoleModulePermission, SalaryRecord
 from .serializer import (
     EmployeePermissionSerializer,
     EmployeeSerializer,
@@ -17,12 +17,54 @@ from .serializer import (
     PinSetSerializer,
     PinLoginSerializer,
     MeSerializer,
+    RoleSerializer,
+    RoleModulePermissionSerializer,
+    SalaryRecordSerializer,
 )
 
 class AppModuleListView(APIView):
     def get(self, request):
         data = [{"key": choice[0], "name": choice[1]} for choice in AppModules.choices]
         return Response(data)
+
+
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all().order_by('name')
+    serializer_class = RoleSerializer
+    permission_classes = []
+
+
+class RoleModulePermissionViewSet(viewsets.ModelViewSet):
+    queryset = RoleModulePermission.objects.select_related('role').all()
+    serializer_class = RoleModulePermissionSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        role_id = self.request.query_params.get('role')
+        if role_id:
+            queryset = queryset.filter(role_id=role_id)
+        return queryset
+
+
+class SalaryRecordViewSet(viewsets.ModelViewSet):
+    queryset = SalaryRecord.objects.select_related('employee', 'employee__user').all().order_by('-created_at')
+    serializer_class = SalaryRecordSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        employee_id = self.request.query_params.get('employee')
+        if employee_id:
+            queryset = queryset.filter(employee_id=employee_id)
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+        salary_type = self.request.query_params.get('salary_type')
+        if salary_type:
+            queryset = queryset.filter(salary_type=salary_type)
+        return queryset
+
 
 User = get_user_model()
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -38,7 +80,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         is_active = self.request.query_params.get("is_active")
         search = self.request.query_params.get("search")
         if role:
-            queryset = queryset.filter(role=role)
+            if role.isdigit():
+                queryset = queryset.filter(role_id=role)
+            else:
+                queryset = queryset.filter(role__name=role)
         if is_active is not None:
             if is_active.lower() == "true":
                 queryset = queryset.filter(is_active=True)

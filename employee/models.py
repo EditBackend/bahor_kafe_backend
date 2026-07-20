@@ -14,8 +14,23 @@ class AppModules(models.TextChoices):
 
 
 
-class EmployeePermission(models.Model):
-    role = models.CharField(max_length=50)
+class Role(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    label = models.CharField(max_length=120, blank=True, default="")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
+
+    def __str__(self):
+        return self.label or self.name
+
+
+class RoleModulePermission(models.Model):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name="module_permissions")
     module = models.CharField(max_length=100, choices=AppModules.choices)
     can_view = models.BooleanField(default=False)
     can_create = models.BooleanField(default=False)
@@ -24,6 +39,7 @@ class EmployeePermission(models.Model):
 
     class Meta:
         unique_together = ('role', 'module')
+
     def __str__(self):
         return f"{self.role} - {self.module}"
 
@@ -60,24 +76,38 @@ class User(AbstractUser):
         return self.phone
 
 class Employee(models.Model):
-    class Role(models.TextChoices):
-        WAITER = "WAITER", "Ofitsiant"
-        KITCHEN = "KITCHEN", "Oshpaz"
-        CASHIER = "CASHIER", "Kassir"
-        MANAGER = "MANAGER", "Menejer"
-        ADMIN = "ADMIN", "Administrator"
     pin_validator = RegexValidator(regex=r'^\d{4}$',message="PIN kod 4 xonali bo‘lishi kerak.")
     user = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name="employee")
-    name = models.CharField(max_length=255)
-    role = models.CharField(max_length=20, choices=Role.choices)
+    first_name = models.CharField(max_length=150, blank=True, default="")
+    last_name = models.CharField(max_length=150, blank=True, default="")
+    name = models.CharField(max_length=255, blank=True, default="")
+    role_name = models.CharField(max_length=20, blank=True, default="")
+    role = models.ForeignKey(Role, null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
     quick_pin = models.CharField(max_length=4, blank=True, default="", validators=[pin_validator])
     pin_is_set = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_full_name(self):
+        if self.name:
+            return self.name
+        full_name = " ".join(filter(None, [self.first_name.strip(), self.last_name.strip()])).strip()
+        if full_name:
+            return full_name
+        if self.user:
+            first = getattr(self.user, "first_name", "") or ""
+            last = getattr(self.user, "last_name", "") or ""
+            return " ".join(filter(None, [first.strip(), last.strip()])).strip() or self.user.phone
+        return ""
+
     def __str__(self):
-        return f"{self.name} ({self.get_role_display()})"
+        full_name = self.get_full_name()
+        if self.role and self.role.label:
+            return f"{full_name} ({self.role.label})"
+        if self.role_name:
+            return f"{full_name} ({self.role_name})"
+        return full_name
 
 
 class EmployeePermission(models.Model):
@@ -88,4 +118,33 @@ class EmployeePermission(models.Model):
     can_income = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.employee.name} permissions"
+        return f"{self.employee.get_full_name()} permissions"
+
+
+class SalaryRecord(models.Model):
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Qoralama"
+        REVIEW = "review", "Tekshirilmoqda"
+        APPROVED = "approved", "Tasdiqlangan"
+        PAID = "paid", "To‘langan"
+
+    class SalaryType(models.TextChoices):
+        MONTHLY = "monthly", "Oylik"
+        HOURLY = "hourly", "Soatlik"
+        BONUS = "bonus", "Bonus"
+        COMMISSION = "commission", "Komissiya"
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="salaries")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    salary_type = models.CharField(max_length=20, choices=SalaryType.choices, default=SalaryType.MONTHLY)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    period = models.CharField(max_length=50, blank=True, default="")
+    note = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.employee.get_full_name()} {self.period} / {self.get_status_display()}"
