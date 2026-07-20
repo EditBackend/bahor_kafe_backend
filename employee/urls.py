@@ -8,6 +8,9 @@ from .views import (
     MeAPIView,
     LogoutAPIView,
     EmployeePermissionAPIView,
+    # additional views
+    AppModuleListView,
+    SalarySimulatorAPIView,
     RoleViewSet,
     RoleModulePermissionViewSet,
     SalaryRecordViewSet,
@@ -26,4 +29,6 @@ urlpatterns = [
     path("auth/logout/", LogoutAPIView.as_view(), name="employee-logout"),
     path("employee/<int:employee_id>/permissions/", EmployeePermissionAPIView.as_view()),
     path('permissions/', EmployeePermissionAPIView.as_view(), name='employee-permissions'),
+    path('modules/', AppModuleListView.as_view(), name='app-modules-list'),
+    path('salary/simulate/', SalarySimulatorAPIView.as_view(), name='salary-simulate'),
 ]

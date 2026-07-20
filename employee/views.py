@@ -244,3 +244,54 @@ class EmployeePermissionAPIView(APIView):
             {"message": "Barcha ruxsatnomalar muvaffaqiyatli saqlandi!"},
             status=status.HTTP_200_OK
         )
+
+
+class SalarySimulatorAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        """Simulate salary based on provided parameters.
+
+        Expected JSON body (examples):
+        - Fixed monthly: {"mode": "monthly", "amount": 3000000}
+        - Hourly: {"mode": "hourly", "hourly_rate": 20000, "hours": 160}
+        - Commission: {"mode": "commission", "orders_sum": 15000000, "percent": 10}
+        - Fixed + commission: {"mode": "fixed_plus_commission", "amount": 2000000, "orders_sum": 5000000, "percent": 5}
+
+        Returns computed `amount` and breakdown.
+        """
+        data = request.data or {}
+        mode = (data.get('mode') or '').lower()
+
+        try:
+            if mode == 'monthly' or mode == 'fiksa' or mode == 'fixed':
+                amount = float(data.get('amount', 0) or 0)
+                breakdown = {'base': amount}
+
+            elif mode == 'hourly' or mode == 'soatlik':
+                hourly_rate = float(data.get('hourly_rate', 0) or 0)
+                hours = float(data.get('hours', 0) or 0)
+                amount = hourly_rate * hours
+                breakdown = {'hourly_rate': hourly_rate, 'hours': hours}
+
+            elif mode == 'commission' or mode == 'foizli':
+                orders_sum = float(data.get('orders_sum', 0) or 0)
+                percent = float(data.get('percent', 0) or 0)
+                amount = orders_sum * (percent / 100.0)
+                breakdown = {'orders_sum': orders_sum, 'percent': percent}
+
+            elif mode == 'fixed_plus_commission' or mode == 'fiksa_plus_foiz':
+                base = float(data.get('amount', 0) or 0)
+                orders_sum = float(data.get('orders_sum', 0) or 0)
+                percent = float(data.get('percent', 0) or 0)
+                commission = orders_sum * (percent / 100.0)
+                amount = base + commission
+                breakdown = {'base': base, 'orders_sum': orders_sum, 'percent': percent, 'commission': commission}
+
+            else:
+                return Response({'error': 'Noto‘g‘ri mode yoki mode ko‘rsatilmagan.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except (ValueError, TypeError):
+            return Response({'error': 'Kiritilgan qiymatlar son bo‘lishi kerak.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'amount': round(amount, 2), 'breakdown': breakdown}, status=status.HTTP_200_OK)
