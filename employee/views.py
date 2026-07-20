@@ -46,6 +46,26 @@ class RoleModulePermissionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(role_id=role_id)
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        role = serializer.validated_data.get('role')
+        module = serializer.validated_data.get('module')
+        defaults = {
+            'can_view': serializer.validated_data.get('can_view', False),
+            'can_create': serializer.validated_data.get('can_create', False),
+            'can_edit': serializer.validated_data.get('can_edit', False),
+            'can_delete': serializer.validated_data.get('can_delete', False),
+        }
+        instance, created = RoleModulePermission.objects.update_or_create(
+            role=role,
+            module=module,
+            defaults=defaults,
+        )
+        output_serializer = self.get_serializer(instance)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(output_serializer.data, status=status_code)
+
 
 class SalaryRecordViewSet(viewsets.ModelViewSet):
     queryset = SalaryRecord.objects.select_related('employee', 'employee__user').all().order_by('-created_at')
