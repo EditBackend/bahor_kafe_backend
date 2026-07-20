@@ -157,13 +157,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def _recalculate_totals(self, order):
         items_total = sum(float(item.qty or 1) * float(item.unit_price or 0) for item in order.items.all())
-        guests_count = int(order.guests_count or 0)
-        if guests_count > 0:
-            service_amount = guests_count * 2000
-        else:
-            service_amount = items_total * 0.10
-
-        total_amount = items_total + service_amount
+        service_amount = 0.0
+        total_amount = items_total
 
         order.service_amount = service_amount
         order.total_amount = total_amount
