@@ -45,6 +45,38 @@ class OrderReceipt(models.Model):
         return f"Chek #{self.order_number}"
 
 
+class ExpenseType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Expense Type"
+        verbose_name_plural = "Expense Types"
+
+    def __str__(self):
+        return self.name
+
+
+class CashTransaction(models.Model):
+    class TransactionType(models.TextChoices):
+        INCOME = "income", "Kirim (Tushum)"
+        EXPENSE = "expense", "Chiqim (Harajat)"
+
+    transaction_type = models.CharField(max_length=20, choices=TransactionType.choices)
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    expense_type = models.ForeignKey(ExpenseType, null=True, blank=True, on_delete=models.SET_NULL, related_name="transactions")
+    created_by = models.ForeignKey("employee.Employee", null=True, blank=True, on_delete=models.SET_NULL, related_name="cash_transactions")
+    note = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} {self.amount} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
+
+
 
 class OrderType(models.TextChoices):
     DINE_IN = "dine_in", "Dine in (zalda)"

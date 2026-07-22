@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
 from .models import Order, OrderItem
-from .serializer import OrderSerializer, OrderItemSerializer,ReportOrderListSerializer
+from .serializer import OrderSerializer, OrderItemSerializer,ReportOrderListSerializer, ExpenseTypeSerializer, CashTransactionSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_date
@@ -399,6 +399,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
+
     @action(detail=True, methods=["post"])
     def close_order(self, request, pk=None):
 
@@ -532,6 +533,67 @@ class OrderViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK
         )
+
+
+class CashTransactionViewSet(viewsets.ModelViewSet):
+    serializer_class = CashTransactionSerializer
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get_queryset(self):
+        from django.apps import apps
+        CashTransaction = apps.get_model('order', 'CashTransaction')
+        return CashTransaction.objects.select_related('expense_type', 'created_by').all().order_by('-created_at')
+
+    def perform_create(self, serializer):
+        employee = getattr(self.request.user, 'employee', None)
+        if employee and 'created_by' not in serializer.validated_data:
+            serializer.save(created_by=employee)
+        else:
+            serializer.save()
+
+
+class FinanceMonitoringAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from django.apps import apps
+        CashTransaction = apps.get_model('order', 'CashTransaction')
+        # Today's total sales across all waiters (regardless of which waiter sold what)
+        valid_sales_statuses = [
+            "paid", "closed", "PAID", "CLOSED",
+            "To'lov olindi", "To‘lov olindi", "Yopildi",
+        ]
+        today = timezone.now().date()
+        today_sales = Order.objects.filter(status__in=valid_sales_statuses, created_at__date=today).aggregate(total=Sum('total_amount'))['total'] or 0
+
+        # Today's cash transactions summary
+        txn_today = CashTransaction.objects.filter(created_at__date=today)
+        txn_summary = txn_today.values('transaction_type').annotate(total=Sum('amount'))
+        txn_summary_dict = {t['transaction_type']: float(t['total'] or 0) for t in txn_summary}
+
+        # Monthly product cost (expenses by product sold) - last 30 days
+        from django.db.models import F
+        month_ago = timezone.now().date() - timezone.timedelta(days=30)
+        items = OrderItem.objects.filter(order__status__in=valid_sales_statuses, order__created_at__date__gte=month_ago)
+        product_costs = {}
+        for it in items.select_related('product'):
+            pname = it.product.name if it.product else (it.product_name_snapshot or "Noma'lum")
+            cost_price = getattr(it.product, 'cost_price', None) if it.product else None
+            if not cost_price:
+                cost_price = (it.unit_price or 0) * 0.4
+            total_cost = float(cost_price) * float(it.qty or 0)
+            product_costs[pname] = product_costs.get(pname, 0) + total_cost
+
+        product_costs_list = [
+            {"product": k, "monthly_cost": v} for k, v in sorted(product_costs.items(), key=lambda x: -x[1])
+        ]
+
+        return Response({
+            "today_sales_total": float(today_sales),
+            "cash_transactions_today": txn_summary_dict,
+            "monthly_product_costs": product_costs_list
+        }, status=status.HTTP_200_OK)
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):

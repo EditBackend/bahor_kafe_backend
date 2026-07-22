@@ -247,3 +247,24 @@ class OrderSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         self._recalculate_totals(instance)
         return instance
+
+
+class ExpenseTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = apps.get_model('order', 'ExpenseType')
+        fields = ['id', 'name', 'is_active', 'created_at']
+
+
+class CashTransactionSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all(), required=False, allow_null=True)
+    expense_type = serializers.PrimaryKeyRelatedField(queryset=apps.get_model('order', 'ExpenseType').objects.all(), required=False, allow_null=True)
+
+    class Meta:
+        model = apps.get_model('order', 'CashTransaction')
+        fields = ['id', 'transaction_type', 'amount', 'expense_type', 'created_by', 'note', 'created_at']
+        read_only_fields = ['created_at']
+
+    def validate_amount(self, value):
+        if value <= 0:
+            raise ValidationError("Amount must be greater than 0")
+        return value
