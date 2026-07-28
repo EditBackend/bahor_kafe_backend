@@ -176,9 +176,28 @@ class FinancialAccountSerializer(serializers.ModelSerializer):
 
 
 class TaminotchiSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    company_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
+
     class Meta:
         model = Taminotchi
-        fields = '__all__'
+        fields = ['id', 'name', 'phone', 'company_name', 'telefon']
+        read_only_fields = ['telefon']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return {
+            'id': data.get('id'),
+            'name': data.get('name'),
+            'phone': data.get('telefon') or '',
+            'company_name': data.get('company_name') or '',
+        }
+
+    def create(self, validated_data):
+        phone = validated_data.pop('phone', None)
+        validated_data.pop('company_name', None)
+        validated_data['telefon'] = phone
+        return super().create(validated_data)
 
 
 class OmborSerializer(serializers.ModelSerializer):

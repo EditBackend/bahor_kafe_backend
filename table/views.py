@@ -1,4 +1,4 @@
-from rest_framework import viewsets,filters
+from rest_framework import viewsets,filters, status
 # from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,6 +8,25 @@ from .models import Table, Product, Category, ProductIngredient,RestaurantSectio
 from .serializer import TableSerializer, ProductSerializer, CategorySerializer, CategoryMenuSerializer, \
     ProductFormSerializer,ProductIngredientSerializer,RestaurantSectionSerializer
 from django.db.models import Prefetch
+
+
+class TableLayoutAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        layout = {
+            "positions": {},
+            "shapes": {}
+        }
+        return Response(layout)
+
+    def post(self, request, *args, **kwargs):
+        payload = request.data or {}
+        positions = payload.get('positions', {})
+        shapes = payload.get('shapes', {})
+        response_data = {
+            "positions": positions,
+            "shapes": shapes,
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class RestaurantSectionViewSet(viewsets.ModelViewSet):

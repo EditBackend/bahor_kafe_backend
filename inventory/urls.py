@@ -18,6 +18,7 @@ from .views import (
     InventoryProductViewSet,
     PurchaseViewSet,
     RealizationViewSet,
+    SuppliersAPIView,
 )
 router = DefaultRouter()
 router.register(r'unit', OlchovBirligiViewSet)
@@ -38,6 +39,7 @@ router.register(r'purchases', PurchaseViewSet, basename='inventory-purchases')
 router.register(r'realizations', RealizationViewSet, basename='inventory-realizations')
 router.register(r'transaction', PurchaseViewSet, basename='inventory-transaction')
 urlpatterns = [
+    path('suppliers/', SuppliersAPIView.as_view(), name='inventory-suppliers'),
     path('', include(router.urls)),
     path('monitoring/', FinanceMonitoringAPIView.as_view(), name='finance-monitoring'),
 ]

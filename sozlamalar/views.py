@@ -6,6 +6,22 @@ from rest_framework.exceptions import MethodNotAllowed
 from .models import Branch,CheckSettings,TaxSettings, OrderFlowSettings,RestaurantSettings
 from .serializer import BranchSerializer,CheckSettingsSerializer,TaxSettingsSerializer,OrderFlowSettingsSerializer,RestaurantSettingsSerializer
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
+
+class CheckSettingsAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        obj, created = CheckSettings.objects.get_or_create(id=1)
+        serializer = CheckSettingsSerializer(obj)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        obj, created = CheckSettings.objects.get_or_create(id=1)
+        serializer = CheckSettingsSerializer(obj, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all().order_by('-id')

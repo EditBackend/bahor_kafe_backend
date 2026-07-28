@@ -14,6 +14,7 @@ from employee.models import EmployeePermission
 from django_filters.rest_framework import DjangoFilterBackend
 from employee.models import EmployeePermission
 from employee.serializer import EmployeePermissionSerializer
+from rest_framework.views import APIView
 from .models import (
     OlchovBirligi,
     Maxsulot,
@@ -48,6 +49,21 @@ from .serializer import (
     RealizationSerializer,
     InventoryProductSerializer,
 )
+
+
+class SuppliersAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        queryset = Taminotchi.objects.all().order_by('id')
+        serializer = TaminotchiSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        serializer = TaminotchiSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class EmployeePermissionViewSet(viewsets.ModelViewSet):
