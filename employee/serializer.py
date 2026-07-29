@@ -35,7 +35,12 @@ class RoleSerializer(serializers.ModelSerializer):
             'updated_at',
             'module_permissions',
         ]
+from .models import SalaryScheme # importga qo'shasiz
 
+class SalarySchemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalaryScheme
+        fields = '__all__'
 
 class EmployeePermissionSerializer(serializers.ModelSerializer):
     employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())

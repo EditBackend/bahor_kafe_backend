@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'inventory',
     'sozlamalar',
     'users',
+    'finance',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',

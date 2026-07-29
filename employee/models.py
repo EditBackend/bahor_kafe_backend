@@ -3,6 +3,37 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
+
+
+
+
+
+class SalaryScheme(models.Model):
+    SCHEME_TYPE_CHOICES = (
+        ('fixed', 'Fiksalangan'),
+        ('hourly', 'Soatbay'),
+        ('percent', 'Foizli'),
+        ('mixed', 'Aralash'),
+    )
+
+    employee = models.ForeignKey('employee.User', on_delete=models.CASCADE, related_name='salary_schemes', null=True, blank=True)
+    title = models.CharField(max_length=255, verbose_name="Sxema nomi")
+    scheme_type = models.CharField(max_length=20, choices=SCHEME_TYPE_CHOICES, default='fixed')
+    fixed_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    hourly_rate = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    sales_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.get_scheme_type_display()})"
+
+
+
+
+
+
+
+
 class AppModules(models.TextChoices):
     DASHBOARD = "dashboard", "Dashboard (Asosiy sahifa)"
     POS_SYSTEM = "pos_system", "Savdo paneli (POS Tizimi)"

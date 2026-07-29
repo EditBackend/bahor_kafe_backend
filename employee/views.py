@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.contrib.auth.models import update_last_login
+from rest_framework import generics
+from .models import SalaryScheme
 from .models import EmployeePermission, Employee, AppModules, Role, RoleModulePermission, SalaryRecord
 from .serializer import (
     EmployeePermissionSerializer,
@@ -27,6 +29,11 @@ class AppModuleListView(APIView):
         data = [{"key": choice[0], "name": choice[1]} for choice in AppModules.choices]
         return Response(data)
 
+from .serializer import SalarySchemeSerializer
+
+class SalarySchemeListCreateView(generics.ListCreateAPIView):
+    queryset = SalaryScheme.objects.all().order_by('-created_at')
+    serializer_class = SalarySchemeSerializer
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all().order_by('name')

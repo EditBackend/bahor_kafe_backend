@@ -13,7 +13,7 @@ from .views import (
     SalarySimulatorAPIView,
     RoleViewSet,
     RoleModulePermissionViewSet,
-    SalaryRecordViewSet,
+    SalaryRecordViewSet, SalarySchemeListCreateView,
 )
 router = DefaultRouter()
 router.register(r"employees", EmployeeViewSet, basename="employees")
@@ -31,4 +31,5 @@ urlpatterns = [
     path('permissions/', EmployeePermissionAPIView.as_view(), name='employee-permissions'),
     path('modules/', AppModuleListView.as_view(), name='app-modules-list'),
     path('salary/simulate/', SalarySimulatorAPIView.as_view(), name='salary-simulate'),
+    path('salary-schemes/', SalarySchemeListCreateView.as_view(), name='salary-schemes'),
 ]
