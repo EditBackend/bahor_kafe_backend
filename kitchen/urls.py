@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from kitchen.views import FoodViewSet, CategoryViewSet, RecipeSelectableItemsAPIView, SyncStatusAPIView, \
-    CategoryListAPIView
+    CategoryListAPIView, RecipeListCreateView
 from .views import (
     KitchenTicketViewSet,
     AbcAnalysisAPIView,
@@ -34,4 +34,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path('sync-status/', SyncStatusAPIView.as_view(), name='sync-status'),
     path('categories/select/', CategoryListAPIView.as_view(), name='category-select'),
+    path('recipes/', RecipeListCreateView.as_view(), name='kitchen-recipes'),
 ]

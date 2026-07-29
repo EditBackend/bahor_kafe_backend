@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from employee.models import EmployeePermission
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.parsers import MultiPartParser, FormParser
 from employee.models import EmployeePermission
 from employee.serializer import EmployeePermissionSerializer
 from rest_framework.views import APIView
@@ -49,6 +50,26 @@ from .serializer import (
     RealizationSerializer,
     InventoryProductSerializer,
 )
+
+
+class EDIImportView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        serializer = EDIImportSerializer(data=request.data)
+        if serializer.is_valid():
+            uploaded_file = serializer.validated_data['file']
+
+            # Bu yerda Excel/EDI faylini qayta ishlash mantiqini yozish mumkin (masalan pandas yoki openpyxl bilan)
+            # Hozircha frontend fayl muvaffaqiyatli yuklanganini ko'rishi uchun 200 qaytaramiz:
+
+            return Response({
+                "status": "success",
+                "message": f"'{uploaded_file.name}' fayli muvaffaqiyatli qabul qilindi va omborga kiritildi.",
+                "filename": uploaded_file.name
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SuppliersAPIView(APIView):

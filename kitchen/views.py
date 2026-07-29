@@ -28,6 +28,12 @@ from employee.models import Employee
 from rest_framework import generics
 from kitchen.models import Category
 
+from .models import Recipe
+from .serializer import RecipeSerializer
+
+class RecipeListCreateView(generics.ListCreateAPIView):
+    queryset = Recipe.objects.all().order_by('-created_at')
+    serializer_class = RecipeSerializer
 
 class CategorySelectSerializer(ModelSerializer):
     class Meta:

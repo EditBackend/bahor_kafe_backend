@@ -6,7 +6,15 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class Recipe(models.Model):
+    product = models.ForeignKey('table.Product', on_delete=models.CASCADE, related_name='recipes', verbose_name="Taom/Mahsulot", null=True, blank=True)
+    ingredient_name = models.CharField(max_length=255, verbose_name="Masalliq nomi")
+    quantity = models.DecimalField(max_digits=10, decimal_places=3, verbose_name="Miqdori/Sarfi")
+    unit = models.CharField(max_length=50, default='kg', verbose_name="O'lchov birligi (kg, litr, dona)")
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.ingredient_name} - {self.quantity} {self.unit}"
 class Food(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)

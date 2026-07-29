@@ -18,7 +18,7 @@ from .views import (
     InventoryProductViewSet,
     PurchaseViewSet,
     RealizationViewSet,
-    SuppliersAPIView,
+    SuppliersAPIView, EDIImportView,
 )
 router = DefaultRouter()
 router.register(r'unit', OlchovBirligiViewSet)
@@ -42,4 +42,5 @@ urlpatterns = [
     path('suppliers/', SuppliersAPIView.as_view(), name='inventory-suppliers'),
     path('', include(router.urls)),
     path('monitoring/', FinanceMonitoringAPIView.as_view(), name='finance-monitoring'),
+    path('edi-import/', EDIImportView.as_view(), name='inventory-edi-import'),
 ]

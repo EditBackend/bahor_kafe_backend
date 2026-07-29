@@ -5,6 +5,14 @@ from .models import KitchenTicket, Department, SemiProductIngredient, SemiProduc
 from order.models import Order
 from .models import MenuProduct, MenuProductRecipe,Food,FoodRecipe,Category,SemiProduct
 
+
+from .models import Recipe
+
+class RecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category

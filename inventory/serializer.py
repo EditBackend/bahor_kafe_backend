@@ -24,6 +24,9 @@ from .models import (
     InventoryProduct,
 )
 User = get_user_model()
+
+class EDIImportSerializer(serializers.Serializer):
+    file = serializers.FileField(required=True)
 class UserMeSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
     class Meta:
