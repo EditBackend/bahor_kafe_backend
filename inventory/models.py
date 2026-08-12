@@ -85,7 +85,7 @@ class InventoryProduct(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
-
+  
 
 
 class InventoryTransaction(models.Model):
@@ -102,6 +102,7 @@ class InventoryTransaction(models.Model):
     def __str__(self):
         ing_name = self.ingredient.name if hasattr(self.ingredient, 'name') else "Maxsulot"
         return f"{self.transaction_type} - {ing_name} ({self.quantity})"
+
 
 class FinancialCategory(models.Model):
     CATEGORY_TYPES = [
@@ -187,7 +188,6 @@ class Ingredient(models.Model):
 class Taminotchi(models.Model):
     name = models.CharField("Ta'minotchi nomi", max_length=200)
     telefon = models.CharField("Telefon raqami", max_length=20, blank=True, null=True)
-
     def __str__(self):
         return self.name
     class Meta:

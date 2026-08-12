@@ -12,7 +12,7 @@ class RestaurantSection(models.Model):
     printer = models.CharField(max_length=255, blank=True, null=True, verbose_name="Printer nomi") # Masalan: Xprinter XP-Q80A
     print_begunok = models.BooleanField(default=True, verbose_name="Begunokni chop etish")
     created_at = models.DateTimeField(auto_now_add=True)
-
+ 
     def __str__(self):
         return self.name
 

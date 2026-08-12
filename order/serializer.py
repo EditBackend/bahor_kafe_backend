@@ -123,11 +123,15 @@ class OrderItemWriteSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     write_items = OrderItemWriteSerializer(many=True, write_only=True, required=False, source='items_input')
+    payment_type = serializers.SerializerMethodField()
+    payment_method = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = [
             "id", "table", "table_part", "type", "number", "status", "guests_count",
             "assigned_waiter", "note", "service_amount", "total_amount",
+            "payment_type", "payment_method",
             "sent_to_kitchen_at", "ready_at", "closed_at", "created_at", "updated_at",
             "items", "write_items"
         ]
@@ -247,6 +251,14 @@ class OrderSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         self._recalculate_totals(instance)
         return instance
+
+    def get_payment_type(self, obj):
+        OrderReceipt = apps.get_model('order', 'OrderReceipt')
+        receipt = OrderReceipt.objects.filter(order_number=obj.number).only('payment_type').first()
+        return receipt.payment_type if receipt else None
+
+    def get_payment_method(self, obj):
+        return self.get_payment_type(obj)
 
 
 class ExpenseTypeSerializer(serializers.ModelSerializer):

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -581,7 +582,7 @@ class FinanceMonitoringAPIView(APIView):
             pname = it.product.name if it.product else (it.product_name_snapshot or "Noma'lum")
             cost_price = getattr(it.product, 'cost_price', None) if it.product else None
             if not cost_price:
-                cost_price = (it.unit_price or 0) * 0.4
+                cost_price = (it.unit_price or Decimal('0')) * Decimal('0.4')
             total_cost = float(cost_price) * float(it.qty or 0)
             product_costs[pname] = product_costs.get(pname, 0) + total_cost
 
