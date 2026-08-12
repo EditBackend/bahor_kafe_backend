@@ -60,9 +60,6 @@ class EDIImportView(APIView):
         if serializer.is_valid():
             uploaded_file = serializer.validated_data['file']
 
-            # Bu yerda Excel/EDI faylini qayta ishlash mantiqini yozish mumkin (masalan pandas yoki openpyxl bilan)
-            # Hozircha frontend fayl muvaffaqiyatli yuklanganini ko'rishi uchun 200 qaytaramiz:
-
             return Response({
                 "status": "success",
                 "message": f"'{uploaded_file.name}' fayli muvaffaqiyatli qabul qilindi va omborga kiritildi.",

@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Employee, EmployeePermission, Role, RoleModulePermission, SalaryRecord
+from sozlamalar.models import Branch
+from sozlamalar.serializer import BranchSerializer
+from .models import Employee, EmployeePermission, Role, RoleModulePermission, SalaryRecord, SalaryScheme
 
 User = get_user_model()
 
@@ -35,12 +37,7 @@ class RoleSerializer(serializers.ModelSerializer):
             'updated_at',
             'module_permissions',
         ]
-from .models import SalaryScheme # importga qo'shasiz
 
-class SalarySchemeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SalaryScheme
-        fields = '__all__'
 
 class EmployeePermissionSerializer(serializers.ModelSerializer):
     employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
@@ -61,9 +58,17 @@ class EmployeeSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source='user.phone', read_only=True)
     oxirgi_kirish = serializers.DateTimeField(source='last_login', format='%Y-%m-%d %H:%M', read_only=True)
     role = RoleSerializer(read_only=True)
+    branch = BranchSerializer(read_only=True)
     role_id = serializers.PrimaryKeyRelatedField(
         queryset=Role.objects.filter(is_active=True),
         source='role',
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+    branch_id = serializers.PrimaryKeyRelatedField(
+        queryset=Branch.objects.all(),
+        source='branch',
         write_only=True,
         required=False,
         allow_null=True,
@@ -76,7 +81,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             'id',
-            'branch',
             'first_name',
             'last_name',
             'name',
@@ -85,6 +89,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'phone',
             'role',
             'role_id',
+            'branch',
+            'branch_id',
             'role_name',
             'quick_pin',
             'pin_is_set',
@@ -94,7 +100,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'oxirgi_kirish',
             'permissions',
         ]
-        read_only_fields = ['pin_is_set', 'created_at', 'updated_at', 'phone', 'full_name', 'username']
+        read_only_fields = ['pin_is_set', 'created_at', 'updated_at', 'phone', 'full_name', 'username', 'branch']
         extra_kwargs = {'quick_pin': {'write_only': True}}
 
     def get_full_name(self, obj):
@@ -151,6 +157,7 @@ class MeSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
     role = RoleSerializer(read_only=True)
+    branch = BranchSerializer(read_only=True)
     permissions = serializers.SerializerMethodField()
 
     class Meta:
@@ -164,6 +171,7 @@ class MeSerializer(serializers.ModelSerializer):
             'username',
             'phone',
             'role',
+            'branch',
             'pin_is_set',
             'is_active',
             'permissions',
@@ -220,18 +228,25 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    branch_id = serializers.PrimaryKeyRelatedField(
+        queryset=Branch.objects.all(),
+        source='branch',
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Employee
         fields = [
             'id',
-            'branch',
             'first_name',
             'last_name',
             'name',
             'phone',
             'password',
             'role_id',
+            'branch_id',
             'is_active',
             'role_name',
         ]
@@ -265,6 +280,21 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         user.save()
         employee = Employee.objects.create(user=user, **validated_data)
         return employee
+
+
+class SalarySchemeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalaryScheme
+        fields = [
+            'id',
+            'employee',
+            'title',
+            'scheme_type',
+            'fixed_salary',
+            'hourly_rate',
+            'sales_percent',
+            'created_at',
+        ]
 
 
 class SalaryRecordSerializer(serializers.ModelSerializer):
@@ -357,3 +387,5 @@ class PinLoginSerializer(serializers.Serializer):
         attrs['user'] = user
         attrs['employee'] = employee
         return attrs
+
+
