@@ -215,6 +215,7 @@ class RestaurantReportAPIView(APIView):
         start_date_param = request.query_params.get('dan_sana')
         end_date_param = request.query_params.get('gacha_sana')
         employee_id = request.query_params.get('ofitsiant_id')
+        branch_id = request.query_params.get('branch_id') or request.query_params.get('branch')
         if start_date_param:
             start_date = parse_date(start_date_param)
             if start_date:
@@ -225,6 +226,8 @@ class RestaurantReportAPIView(APIView):
                 orders = orders.filter(created_at__date__lte=end_date)
         if employee_id:
             orders = orders.filter(assigned_waiter_id=employee_id)
+        if branch_id:
+            orders = orders.filter(branch_id=branch_id)
         totals = orders.aggregate(
             jami_buyurtmalar=Count('id'),
             jami_savdo=Sum('total_amount'),
@@ -289,7 +292,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = (
             Order.objects
-            .select_related("table", "assigned_waiter")
+            .select_related("table", "assigned_waiter", "branch")
             .prefetch_related("items")
             .all()
             .order_by("-created_at")
@@ -298,6 +301,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         table_param = self.request.query_params.get("table")
         type_param = self.request.query_params.get("type")
         waiter_param = self.request.query_params.get("assigned_waiter")
+        branch_param = self.request.query_params.get("branch") or self.request.query_params.get("branch_id")
         if status_param:
             queryset = queryset.filter(status=status_param)
         if table_param:
@@ -306,6 +310,8 @@ class OrderViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(type=type_param)
         if waiter_param:
             queryset = queryset.filter(assigned_waiter_id=waiter_param)
+        if branch_param:
+            queryset = queryset.filter(branch_id=branch_param)
         return queryset
 
 

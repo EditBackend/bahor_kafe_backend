@@ -13,6 +13,7 @@ class TableSerializer(serializers.ModelSerializer):
         model = Table
         fields = [
             "id",
+            "branch",
             "name",
             "parts",
             "status",

@@ -248,11 +248,14 @@ class DashboardAPIView(APIView):
         start_date_param = request.query_params.get("start_date")
         end_date_param = request.query_params.get("end_date")
         date_preset = request.query_params.get("date_preset", "today")
+        branch_id = request.query_params.get("branch_id") or request.query_params.get("branch")
         valid_sales_statuses = [
             "paid", "closed", "PAID", "CLOSED",
             "To'lov olindi", "To‘lov olindi", "Yopildi", "1"
         ]
         orders = Order.objects.filter(status__in=valid_sales_statuses)
+        if branch_id:
+            orders = orders.filter(branch_id=branch_id)
         if date_preset == "all":
             pass
         elif date_preset == "yesterday":
@@ -310,24 +313,35 @@ class DashboardAPIView(APIView):
             if h_data['soat'] is not None:
                 soatbay_oqim[f"{h_data['soat']}:00"] = h_data['soni']
         kitchen_statuses = ["sent_to_kitchen", "cooking", "Oshxonaga yuborildi", "Tayyorlanmoqda", "2", "3"]
-        oshxona_tayyorlanmoqda = Order.objects.filter(status__in=kitchen_statuses).count()
+        oshxona_qs = Order.objects.filter(status__in=kitchen_statuses)
+        if branch_id:
+            oshxona_qs = oshxona_qs.filter(branch_id=branch_id)
+        oshxona_tayyorlanmoqda = oshxona_qs.count()
         yigirma_daqiqa_oldingi_vaqt = timezone.now() - timedelta(minutes=20)
-        oshxona_kechikkan = Order.objects.filter(
-            status__in=kitchen_statuses,
+        oshxona_kechikkan = oshxona_qs.filter(
             created_at__lt=yigirma_daqiqa_oldingi_vaqt
         ).count()
         bugun = timezone.now().date()
-        bugungi_tushum = Order.objects.filter(
+        bugun_qs = Order.objects.filter(
             status__in=valid_sales_statuses,
             created_at__date=bugun
-        ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        )
+        if branch_id:
+            bugun_qs = bugun_qs.filter(branch_id=branch_id)
+        bugungi_tushum = bugun_qs.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
         active_order_statuses = ["sent_to_kitchen", "cooking", "ready", "served", "payment_pending", "Tayyorlanmoqda","Tayyor", "Berildi"]
-        band_stollar = Order.objects.filter(
+        band_qs = Order.objects.filter(
             status__in=active_order_statuses,
             table__isnull=False
-        ).values('table').distinct().count()
+        )
+        if branch_id:
+            band_qs = band_qs.filter(branch_id=branch_id)
+        band_stollar = band_qs.values('table').distinct().count()
+        top_products_qs = OrderItem.objects.filter(order__status__in=valid_sales_statuses)
+        if branch_id:
+            top_products_qs = top_products_qs.filter(order__branch_id=branch_id)
         top_products_query = (
-            OrderItem.objects.filter(order__status__in=valid_sales_statuses)
+            top_products_qs
             .values(nomi=F('product__name'))
             .annotate(tushum=Sum(F('qty') * F('unit_price')))
             .order_by('-tushum')[:5]
@@ -362,11 +376,14 @@ class SotuvHisobotiAPIView(APIView):
     def get(self, request):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
+        branch_id = request.query_params.get("branch_id") or request.query_params.get("branch")
         order_items = OrderItem.objects.all().select_related('order', 'product', 'product__category')
         if start_date:
             order_items = order_items.filter(order__created_at__date__gte=parse_date(start_date))
         if end_date:
             order_items = order_items.filter(order__created_at__date__lte=parse_date(end_date))
+        if branch_id:
+            order_items = order_items.filter(order__branch_id=branch_id)
         products_stats = (
             order_items.values(
                 nomi=F('product__name'),
@@ -416,11 +433,14 @@ class UmumiyHisobotAPIView(APIView):
     def get(self, request):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
+        branch_id = request.query_params.get("branch_id") or request.query_params.get("branch")
         orders = Order.objects.all()
         if start_date:
             orders = orders.filter(created_at__date__gte=parse_date(start_date))
         if end_date:
             orders = orders.filter(created_at__date__lte=parse_date(end_date))
+        if branch_id:
+            orders = orders.filter(branch_id=branch_id)
         daily_stats = (
             orders.annotate(kun=TruncDate('created_at'))
             .values('kun', kassa_nomi=F('assigned_waiter__name'))

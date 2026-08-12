@@ -43,6 +43,7 @@ class TableViewSet(viewsets.ModelViewSet):
         queryset = Table.objects.all().order_by("name").prefetch_related('parts')
         status_param = self.request.query_params.get("status")
         is_active_param = self.request.query_params.get("is_active")
+        branch_param = self.request.query_params.get("branch") or self.request.query_params.get("branch_id")
         if status_param:
             queryset = queryset.filter(status=status_param)
 
@@ -51,6 +52,8 @@ class TableViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(is_active=True)
             elif is_active_param.lower() == "false":
                 queryset = queryset.filter(is_active=False)
+        if branch_param:
+            queryset = queryset.filter(branch_id=branch_param)
         return queryset
 
 

@@ -32,6 +32,14 @@ class Table(models.Model):
         unique=True,
         help_text="Stol nomi yoki raqami. Masalan: 1-stol, VIP-1."
     )
+    branch = models.ForeignKey(
+        "sozlamalar.Branch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tables",
+        help_text="Stol tegishli bo'lgan filial.",
+    )
 
     status = models.CharField(
         max_length=20,

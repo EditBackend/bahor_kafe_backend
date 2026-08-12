@@ -26,6 +26,20 @@ class CheckSettingsAPIView(APIView):
 class BranchViewSet(viewsets.ModelViewSet):
     queryset = Branch.objects.all().order_by('-id')
     serializer_class = BranchSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        is_active_param = self.request.query_params.get("is_active")
+        search_param = self.request.query_params.get("search")
+        if is_active_param is not None:
+            if is_active_param.lower() == "true":
+                queryset = queryset.filter(is_active=True)
+            elif is_active_param.lower() == "false":
+                queryset = queryset.filter(is_active=False)
+        if search_param:
+            queryset = queryset.filter(name__icontains=search_param.strip())
+        return queryset
 
 
 class CheckSettingsViewSet(viewsets.ViewSet):

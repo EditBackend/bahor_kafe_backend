@@ -156,7 +156,7 @@ class InventoryProductViewSet(viewsets.ModelViewSet):
     serializer_class = InventoryProductSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['category', 'product_type']
+    filterset_fields = ['category', 'product_type', 'branch']
     search_fields = ['name', 'barcode', 'mxik']
 
 

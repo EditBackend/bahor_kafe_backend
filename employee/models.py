@@ -114,6 +114,7 @@ class Employee(models.Model):
     name = models.CharField(max_length=255, blank=True, default="")
     role_name = models.CharField(max_length=20, blank=True, default="")
     role = models.ForeignKey(Role, null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
+    branch = models.ForeignKey("sozlamalar.Branch", null=True, blank=True, on_delete=models.SET_NULL, related_name="employees")
     quick_pin = models.CharField(max_length=4, blank=True, default="", validators=[pin_validator])
     pin_is_set = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

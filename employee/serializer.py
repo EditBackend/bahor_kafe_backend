@@ -76,6 +76,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             'id',
+            'branch',
             'first_name',
             'last_name',
             'name',
@@ -224,6 +225,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             'id',
+            'branch',
             'first_name',
             'last_name',
             'name',

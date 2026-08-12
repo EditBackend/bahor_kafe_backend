@@ -82,6 +82,7 @@ class InventoryProduct(models.Model):
     is_commission = models.BooleanField(default=False, verbose_name="Komissiya")
     description = models.TextField(blank=True, null=True, verbose_name="Tavsif")
     current_stock = models.FloatField(default=0.0, verbose_name="Ombordagi joriy zaxira")
+    branch = models.ForeignKey('sozlamalar.Branch', on_delete=models.SET_NULL, null=True, blank=True, related_name='inventory_products', verbose_name="Filial")
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name

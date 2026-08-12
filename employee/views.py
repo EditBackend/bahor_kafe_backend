@@ -106,6 +106,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         role = self.request.query_params.get("role")
         is_active = self.request.query_params.get("is_active")
         search = self.request.query_params.get("search")
+        branch = self.request.query_params.get("branch") or self.request.query_params.get("branch_id")
         if role:
             if role.isdigit():
                 queryset = queryset.filter(role_id=role)
@@ -118,6 +119,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(is_active=False)
         if search:
             queryset = queryset.filter(name__icontains=search.strip())
+        if branch:
+            queryset = queryset.filter(branch_id=branch)
         return queryset
     def get_serializer_class(self):
         if self.action == "create":

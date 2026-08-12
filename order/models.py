@@ -104,6 +104,14 @@ class Order(models.Model):
         related_name="orders",
         help_text="Stol (faqat dine-in bo'lsa to'ladi).",
     )
+    branch = models.ForeignKey(
+        "sozlamalar.Branch",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+        help_text="Buyurtma tegishli bo'lgan filial.",
+    )
     table_part = models.ForeignKey(
         "table.TablePart",
         on_delete=models.SET_NULL,
