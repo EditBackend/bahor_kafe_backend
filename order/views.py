@@ -47,25 +47,30 @@ def send_to_printer(order_data):
     text_order = ""
     if settings.show_sotuvchi:
         text_order += f"Kassir: Admin\n"
-    text_order += f"Buyurtma: #{order_data.get('order_number')}\n"
-    text_order += f"Stol: {order_data.get('table_number')}\n"
+    text_order += f"Buyurtma: #{order_data.get('order_number', '')}\n"
+    text_order += f"Stol: {order_data.get('table_number', '')}\n"
     packet.extend(text_order.encode('utf-8'))
     packet.extend(f"------------------------------------------------\n".encode('utf-8'))
     packet.extend(f"Nomi                   Soni   Narxi      Jami\n".encode('utf-8'))
     packet.extend(f"------------------------------------------------\n".encode('utf-8'))
     items = order_data.get('items', [])
     for item in items:
-        name = item.get('name', '')[:20]
-        qty = str(item.get('quantity', 1))
-        price = str(item.get('price', 0))
-        total = str(int(qty) * int(price))
-        line = f"{name:<22} {qty:<6} {price:<10} {total}\n"
+        name = str(item.get('name', ''))[:20]
+        try:
+            qty_num = float(item.get('quantity', 1))
+            price_num = float(item.get('price', 0))
+        except (ValueError, TypeError):
+            qty_num, price_num = 1.0, 0.0
+        qty_str = f"{qty_num:g}"
+        price_str = f"{price_num:g}"
+        total_str = f"{qty_num * price_num:g}"
+        line = f"{name:<22} {qty_str:<6} {price_str:<10} {total_str}\n"
         packet.extend(line.encode('utf-8'))
     packet.extend(f"------------------------------------------------\n".encode('utf-8'))
     packet.extend(BOLD_ON + DOUBLE_SIZE)
-    packet.extend(f"JAMI: {order_data.get('total_amount')} UZS\n".encode('utf-8'))
+    packet.extend(f"JAMI: {order_data.get('total_amount', 0)} UZS\n".encode('utf-8'))
     packet.extend(NORMAL_SIZE + BOLD_OFF)
-    packet.extend(f"To'lov turi: {order_data.get('payment_type')}\n".encode('utf-8'))
+    packet.extend(f"To'lov turi: {order_data.get('payment_type', 'NAQD')}\n".encode('utf-8'))
     packet.extend(f"------------------------------------------------\n".encode('utf-8'))
     if settings.show_eslatma:
         packet.extend(CENTER)
@@ -94,35 +99,51 @@ def checkout_and_print_api(request):
             from django.apps import apps
             InventoryProductModel = apps.get_model('inventory', 'InventoryProduct')
             items = data.get('items', [])
-            for item in items:
-                prod_id = item.get('id') or item.get('product_id')
-                qty = float(item.get('quantity', 1))
-                if prod_id:
-                    try:
-                        product = InventoryProductModel.objects.get(id=prod_id)
-                        if product.current_stock < qty:
-                            return JsonResponse({
-                                "status": "error",
-                                "message": f"{product.name} omborda yetarli emas! Qoldiq: {product.current_stock} ta/kg, so'raldi: {qty} ta/kg"
-                            }, status=400)
-                    except InventoryProductModel.DoesNotExist:
-                        return JsonResponse({
-                            "status": "error",
-                            "message": f"IDsi {prod_id} bo'lgan mahsulot ombordan topilmadi!"
-                        }, status=400)
+            
             with transaction.atomic():
                 for item in items:
                     prod_id = item.get('id') or item.get('product_id')
-                    qty = float(item.get('quantity', 1))
+                    try:
+                        qty = float(item.get('quantity', 1))
+                    except (ValueError, TypeError):
+                        qty = 1.0
+
+                    if prod_id:
+                        try:
+                            product = InventoryProductModel.objects.select_for_update().get(id=prod_id)
+                            if product.current_stock < qty:
+                                return JsonResponse({
+                                    "status": "error",
+                                    "message": f"{product.name} omborda yetarli emas! Qoldiq: {product.current_stock} ta/kg, so'raldi: {qty} ta/kg"
+                                }, status=400)
+                        except InventoryProductModel.DoesNotExist:
+                            return JsonResponse({
+                                "status": "error",
+                                "message": f"IDsi {prod_id} bo'lgan mahsulot ombordan topilmadi!"
+                            }, status=400)
+
+                for item in items:
+                    prod_id = item.get('id') or item.get('product_id')
+                    try:
+                        qty = float(item.get('quantity', 1))
+                    except (ValueError, TypeError):
+                        qty = 1.0
+
                     if prod_id:
                         product = InventoryProductModel.objects.get(id=prod_id)
-                        product.current_stock -= qty
-                        product.save()
+                        product.current_stock = float(product.current_stock) - qty
+                        product.save(update_fields=['current_stock'])
+
+                order_num = data.get('order_number', 0)
+                table_num = data.get('table_number', 0)
+                tot_amt = data.get('total_amount', 0)
+                pay_type = data.get('payment_type', 'NAQD')
+
                 receipt = OrderReceipt.objects.create(
-                    order_number=data['order_number'],
-                    table_number=data['table_number'],
-                    total_amount=data['total_amount'],
-                    payment_type=data['payment_type']
+                    order_number=order_num,
+                    table_number=table_num,
+                    total_amount=tot_amt,
+                    payment_type=pay_type
                 )
             printer_result = send_to_printer(data)
             if printer_result:

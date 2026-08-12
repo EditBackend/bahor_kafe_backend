@@ -433,14 +433,14 @@ class UmumiyHisobotAPIView(APIView):
             .order_by('-kun')
         )
         dinamika_list = []
-        total_revenue = 0
+        total_revenue = Decimal('0.0')
         for d in daily_stats:
-            tushum = d['jami_tushum'] or 0
+            tushum = Decimal(str(d['jami_tushum'] or 0))
             savdolar = d['savdolar_soni'] or 0
-            chegirma = d['jami_chegirma'] or 0
-            qaytarish = d['jami_qaytarish'] or 0
+            chegirma = Decimal(str(d['jami_chegirma'] or 0))
+            qaytarish = Decimal(str(d['jami_qaytarish'] or 0))
             sof_tushum = tushum - chegirma - qaytarish
-            kunlik_tannarx = 0
+            kunlik_tannarx = 0.0
             current_date = d['kun']
             if current_date is not None:
                 day_items = OrderItem.objects.filter(order__created_at__date=current_date).select_related('product')
@@ -473,146 +473,17 @@ class UmumiyHisobotAPIView(APIView):
             .order_by('-tushum')
         )
         kassa_list = []
+        tot_rev_float = float(total_revenue)
         for c in cashier_stats:
-            c_tushum = c['tushum'] or 0
-            percentage = round((c_tushum / total_revenue) * 100, 2) if total_revenue > 0 else 0.0
-            kassa_list.append({
-                "kassa": c['kassa_nomi'] or "Nomalum Xodim",
-                "tushum": float(c_tushum),
-                "ulush_foiz": percentage
-            })
-        return Response({
-            "jami_tushum": float(total_revenue),
-            "dinamika": dinamika_list,
-            "kassalar_statistikasi": kassa_list
-        }, status=status.HTTP_200_OK)
-
-class AbcAnalysisAPIView(APIView):
-    def get(self, request):
-        start_date = request.query_params.get("start_date")
-        end_date = request.query_params.get("end_date")
-        category_id = request.query_params.get("category_id")
-        order_items = OrderItem.objects.all().select_related('order', 'product')
-        if start_date:
-            order_items = order_items.filter(order__created_at__date__gte=parse_date(start_date))
-        if end_date:
-            order_items = order_items.filter(order__created_at__date__lte=parse_date(end_date))
-        if category_id:
-            order_items = order_items.filter(product__category_id=category_id)
-        products_stats = (
-            order_items.values(nomi=F('product__name'))
-            .annotate(
-                tushum=Sum('line_total'),
-                sotuv_soni=Sum('qty')
-            )
-            .order_by('-tushum')
-        )
-        total_revenue = sum(p['tushum'] or 0 for p in products_stats)
-        abc_list = []
-        running_sum = 0
-        for p in products_stats:
-            tushum = p['tushum'] or 0
-            sotuv_soni = p['sotuv_soni'] or 0
-            share_percent = (tushum / total_revenue) * 100 if total_revenue > 0 else 0
-            running_sum += share_percent
-            if running_sum <= 80:
-                kategoriya_abc = "A"
-            elif running_sum <= 95:
-                kategoriya_abc = "B"
-            else:
-                kategoriya_abc = "C"
-            item_sample = order_items.filter(product__name=p['nomi']).first()
-            tannarx_dona = getattr(item_sample.product, 'cost_price', 0) if item_sample and item_sample.product else 0
-            if not tannarx_dona and item_sample:
-                tannarx_dona = (item_sample.unit_price or Decimal('0')) * Decimal('0.4')
-            jami_tannarx = float(tannarx_dona) * float(sotuv_soni)
-            foyda = float(tushum) - jami_tannarx
-            abc_list.append({
-                "artikul": getattr(item_sample.product, 'artikul', '—') if item_sample and item_sample.product else "—",
-                "nomi": p['nomi'] or "Noma'lum mahsulot",
-                "tushum": tushum,
-                "sotuv": f"{sotuv_soni} dona.",
-                "foyda": round(foyda, 1),
-                "tushumdan": f"{round(share_percent, 2)}%",
-                "kategoriya_abc": kategoriya_abc
-            })
-        return Response({
-            "jami_tushum": total_revenue,
-            "abc_analiz": abc_list
-        }, status=status.HTTP_200_OK)
-
-
-class UmumiyHisobotAPIView(APIView):
-    def get(self, request):
-        start_date = request.query_params.get("start_date")
-        end_date = request.query_params.get("end_date")
-        orders = Order.objects.all()
-        if start_date:
-            orders = orders.filter(created_at__date__gte=parse_date(start_date))
-        if end_date:
-            orders = orders.filter(created_at__date__lte=parse_date(end_date))
-        daily_stats = (
-            orders.annotate(kun=TruncDate('created_at'))
-            .values('kun', kassa_nomi=F('assigned_waiter__name'))
-            .annotate(
-                savdolar_soni=Count('id'),
-                jami_tushum=Sum('total_amount'),
-                jami_chegirma=Sum(F('service_amount') * 0),
-                jami_qaytarish=Sum(F('total_amount') * 0),
-            )
-            .order_by('-kun')
-        )
-        dinamika_list = []
-        total_revenue = 0
-        for d in daily_stats:
-            tushum = d['jami_tushum'] or 0
-            savdolar = d['savdolar_soni'] or 0
-            chegirma = d['jami_chegirma'] or 0
-            qaytarish = d['jami_qaytarish'] or 0
-            sof_tushum = tushum - chegirma - qaytarish
-            kunlik_tannarx = 0
-            current_date = d['kun']
-            if current_date is not None:
-                day_items = OrderItem.objects.filter(order__created_at__date=current_date).select_related('product')
-                for item in day_items:
-                    t_dona = getattr(item.product, 'cost_price', 0) if item.product else 0
-                    if not t_dona:
-                        t_dona = (item.unit_price or Decimal('0')) * Decimal('0.4')
-                    kunlik_tannarx += (float(t_dona) * float(item.qty or 0))
-                sana_str = current_date.strftime('%Y-%m-%d')
-            else:
-                sana_str = "——"
-            sof_foyda = float(sof_tushum) - kunlik_tannarx
-            marja_foiz = round((sof_foyda / float(sof_tushum)) * 100, 1) if sof_tushum > 0 else 0
-            total_revenue += tushum
-            dinamika_list.append({
-                "sana": sana_str,
-                "kassa": d['kassa_nomi'] or "Noma'lum Xodim",
-                "savdolar_soni": f"{savdolar} dona.",
-                "tushum": tushum,
-                "chegirma": chegirma if chegirma > 0 else "—",
-                "chegirma_foiz": "—",
-                "qaytarish": f"-{qaytarish}" if qaytarish > 0 else "—",
-                "sof_tushum": sof_tushum,
-                "foyda": round(sof_foyda, 1),
-                "marja": f"{marja_foiz}%"
-            })
-        cashier_stats = (
-            orders.values(kassa_nomi=F('assigned_waiter__name'))
-            .annotate(tushum=Sum('total_amount'))
-            .order_by('-tushum')
-        )
-        kassa_list = []
-        for c in cashier_stats:
-            c_tushum = c['tushum'] or 0
-            percentage = round((c_tushum / total_revenue) * 100, 2) if total_revenue > 0 else 0
+            c_tushum = float(c['tushum'] or 0)
+            percentage = round((c_tushum / tot_rev_float) * 100, 2) if tot_rev_float > 0 else 0.0
             kassa_list.append({
                 "kassa": c['kassa_nomi'] or "Nomalum Xodim",
                 "tushum": c_tushum,
                 "ulush_foiz": percentage
             })
         return Response({
-            "jami_tushum": total_revenue,
+            "jami_tushum": tot_rev_float,
             "dinamika": dinamika_list,
             "kassalar_statistikasi": kassa_list
         }, status=status.HTTP_200_OK)
@@ -641,13 +512,14 @@ class AbcAnalysisAPIView(APIView):
             )
             .order_by('-tushum')
         )
-        total_revenue = sum(p['tushum'] or 0 for p in products_stats)
+        total_revenue = sum(float(p['tushum'] or 0) for p in products_stats)
+        abc_list = []
         kategoriyalar_bunch = {}
         running_sum = 0
         for p in products_stats:
-            tushum = p['tushum'] or 0
-            sotuv_soni = p['sotuv_soni'] or 0
-            share_percent = (tushum / total_revenue) * 100 if total_revenue > 0 else 0
+            tushum = float(p['tushum'] or 0)
+            sotuv_soni = float(p['sotuv_soni'] or 0)
+            share_percent = (tushum / total_revenue) * 100 if total_revenue > 0 else 0.0
             running_sum += share_percent
             if running_sum <= 80:
                 kategoriya_abc = "A"
@@ -665,23 +537,23 @@ class AbcAnalysisAPIView(APIView):
                 "artikul": getattr(item_sample.product, 'artikul', '—') if item_sample and item_sample.product else "—",
                 "nomi": p['nomi'] or "Noma'lum mahsulot",
                 "tushum": tushum,
-                "sotuv": f"{sotuv_soni} dona.",
+                "sotuv": f"{sotuv_soni:g} dona.",
                 "foyda": round(foyda, 1),
                 "tushumdan": f"{round(share_percent, 2)}%",
                 "kategoriya_abc": kategoriya_abc
             }
+            abc_list.append(mahsulot_mahlumoti)
             kat_nomi = p['kategoriya_nomi'] or "Kategoriyasiz"
             if kat_nomi not in kategoriyalar_bunch:
                 kategoriyalar_bunch[kat_nomi] = []
             kategoriyalar_bunch[kat_nomi].append(mahsulot_mahlumoti)
-        guruhlangan_abc_list = []
-        for kat_name, products in kategoriyalar_bunch.items():
-            guruhlangan_abc_list.append({
-                "kategoriya": kat_name,
-                "mahsulotlar": products
-            })
+        guruhlangan_abc_list = [
+            {"kategoriya": kat_name, "mahsulotlar": products}
+            for kat_name, products in kategoriyalar_bunch.items()
+        ]
         return Response({
             "jami_tushum": total_revenue,
+            "abc_analiz": abc_list,
             "abc_analiz_guruhlangan": guruhlangan_abc_list
         }, status=status.HTTP_200_OK)
 

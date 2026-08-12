@@ -155,8 +155,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
         if order_type in [OrderType.TAKEAWAY, OrderType.DELIVERY] and table:
             raise serializers.ValidationError({"table": "Takeaway yoki delivery buyurtmada stol bo‘lmasligi kerak."})
-        if assigned_waiter and getattr(assigned_waiter, "role", None) != "WAITER":
-            raise serializers.ValidationError({"assigned_waiter": "Mas'ul xodimning roli WAITER bo‘lishi kerak."})
+        if assigned_waiter:
+            role_attr = getattr(assigned_waiter, "role", None)
+            role_name = getattr(role_attr, "name", str(role_attr or "")).upper()
+            if role_name and role_name != "WAITER":
+                raise serializers.ValidationError({"assigned_waiter": "Mas'ul xodimning roli WAITER bo‘lishi kerak."})
         return attrs
 
     def _recalculate_totals(self, order):
